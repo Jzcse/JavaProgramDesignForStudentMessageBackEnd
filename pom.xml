@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.4.2-SNAPSHOT</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>cn.edu.sdu</groupId>
+	<artifactId>java-server</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>java-server</name>
+	<description>Demo project for Spring Boot</description>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>21</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<!-- SpringBoot-data-jpa 操作数据库用的依赖 -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<!-- 用于简单操作redis数据库的依赖 -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<dependency>
+			<!-- 简化邮件的配置与使用 -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+			<!-- 简化安全控制的集成和使用 -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<!-- 集成和使用 Bean 验证功能-->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<!-- 提供构建 Web 应用所需的核心功能 -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<!-- 简化 WebSocket 功能的集成和使用 -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+		<dependency>
+			<!-- 一个 Maven 依赖配置，用于在项目中引入 MySQL 数据库的 JDBC 驱动。这个驱动允许 Java 应用程序通过 JDBC API 与 MySQL 数据库进行通信。 -->
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<!-- 一个 Maven 依赖配置，用于在项目中引入 Lombok 库。Lombok 是一个 Java 库，它可以自动插入 getter 和 setter 方法、toString()、equals() 和 hashCode() 方法等，从而减少样板代码的编写。 -->
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.36</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<!-- 用于简化单元测试和集成测试的设置 -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- 用于简化安全相关的集成测试 -->
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- Spring Data Relational 提供了对关系数据库访问的抽象，支持使用类似 Spring Data JPA 的编程模型来操作 SQL 数据库。 -->
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-relational</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+		<dependency>
+			<!-- 在项目中引入 JSON Web Token (JWT) 的处理库,用于生成和验证 JWT -->
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<!-- 一个 Maven 依赖配置，用于在项目中引入 jjwt-impl 库，这是 JWT (JSON Web Token) 处理库 jjwt 的一个实现部分。jjwt-impl 提供了 JWT 库的实现细节，通常与 jjwt-api（API 部分）一起使用。 -->
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<!-- 一个 Maven 依赖配置，用于在项目中引入 jjwt-jackson 库。这个库是 jjwt（JSON Web Token）项目的一部分，专门用于处理 JWT 中的 JSON 序列化和反序列化。jjwt-jackson 依赖于 Jackson 库来执行这些操作。 -->
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<!-- 一个 Maven 依赖配置，用于在项目中引入 Apache POI 的 poi-ooxml 库。Apache POI 是一个流行的 Java 库，用于处理 Microsoft Office 格式的文件，特别是 Excel 文件（包括旧的 .xls 格式和新的 .xlsx 格式）。poi-ooxml 模块特别关注对 OpenXML 格式（即 .xlsx 文件）的支持 -->
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.2</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<executable>true</executable>
+					<jvmArguments>-Dfile.encoding=utf-8</jvmArguments>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<repositories>
+		<repository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>
