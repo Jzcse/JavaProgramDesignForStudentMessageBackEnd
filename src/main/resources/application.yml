@@ -16,9 +16,9 @@ spring:
 #    username: java_server
 ###    数据库密码
 #    password: JavaServer2025@
-    url: jdbc:mysql://202.194.14.120:3306/java_1_16?allowPublicKeyRetrieval=true&useSSL=false
-    username: java_1_16
-    password: JavaP116@
+    url: jdbc:mysql://202.194.14.120:3306/java_2_16?allowPublicKeyRetrieval=true&useSSL=false
+    username: java_2_16
+    password: JavaP216@
   jpa:
     generate-ddl: true
 #    自动更新数据库表的结构
