@@ -24,7 +24,7 @@ public class Student {
     @Id //表明personId是主键
     private Integer personId;
 
-    @OneToOne //表明是一对一的关系
+    @OneToOne //表明是一对一的关系,一个学生对应一个Person对象
     @JoinColumn(name="person_id")
     @JsonIgnore
     private Person person;
