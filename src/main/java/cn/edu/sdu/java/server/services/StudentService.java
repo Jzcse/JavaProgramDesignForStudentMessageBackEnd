@@ -100,13 +100,13 @@ public class StudentService {
         String numName = dataRequest.getString("numName");
         List dataList = getStudentMapList(numName);
         return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
+
     }
 
 
 
     public DataResponse studentDelete(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");  //获取student_id值
-        personId = null;
         Student s = null;
         Optional<Student> op;
         if (personId != null) {

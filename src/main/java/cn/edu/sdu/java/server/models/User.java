@@ -18,36 +18,41 @@ import jakarta.validation.constraints.Size;
 @Entity
 @Table(	name = "user",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "userName"),
+                @UniqueConstraint(columnNames = "userName"), //这里指数据库表结构的约束，表示列名为userName的列的值必须唯一
         })
 public class User {
     @Id
     private Integer personId;
 
-    @ManyToOne()
-    @JoinColumn(name = "user_type_id")
+    @ManyToOne() //指多个记录可以对应到多个记录上，这里是说多个用户可以关联到一个用户类型上
+    @JoinColumn(name = "user_type_id") //表示这个表对另一个表的主键的引用，这里是对UserType表的主键的引用
     private UserType userType;
 
-    @OneToOne
-    @JoinColumn(name="person_id")
+    @OneToOne //指只有一个记录可以对应到一个记录上，这里是说一个用户只关联到一个个人上
+    @JoinColumn(name="person_id") //这里是指一个用户指向一个个人，用户主要储存账户的相关信息，而个人储存个人信息
     private Person person;
 
-    @NotBlank
+    @NotBlank //在该项目中没有DTO，这个注解的意思是不能为空
     @Size(max = 20)
     private String userName;
-
 
     @NotBlank
     @Size(max = 60)
     private String password;
 
     private Integer loginCount;
+
     @Size(max = 20)
     private String lastLoginTime;
+
     @Size(max = 20)
     private String  createTime;
+
     private Integer creatorId;
 
+    /**
+     *构造器
+     */
     public User() {
     }
 
