@@ -12,33 +12,33 @@ import java.util.*;
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
-    private final PersonRepository personRepository;
+//    private final PersonRepository personRepository; // 暂时没用到
     public CourseService(CourseRepository courseRepository, PersonRepository personRepository) {
         this.courseRepository = courseRepository;
-        this.personRepository = personRepository;
+//        this.personRepository = personRepository;
     }
 
     public DataResponse getCourseList(DataRequest dataRequest) {
         String numName = dataRequest.getString("numName");
         if(numName == null)
             numName = "";
-        List<Course> cList = courseRepository.findCourseListByNumName(numName);  //数据库查询操作
+        List<Course> courseList = courseRepository.findCourseListByNumName(numName);  //数据库查询操作
         List dataList = new ArrayList();
-        Map m;
-        Course pc;
-        for (Course c : cList) {
-            m = new HashMap();
-            m.put("courseId", c.getCourseId()+"");
-            m.put("num",c.getNum());
-            m.put("name",c.getName());
-            m.put("credit",c.getCredit()+"");
-            m.put("coursePath",c.getCoursePath());
-            pc =c.getPreCourse();
-            if(pc != null) {
-                m.put("preCourse",pc.getName());
-                m.put("preCourseId",pc.getCourseId());
+        Map courseMap;
+        Course preCourse;
+        for (Course course : courseList) {
+            courseMap = new HashMap();
+            courseMap.put("courseId", course.getCourseId()+"");
+            courseMap.put("num",course.getNum());
+            courseMap.put("name",course.getName());
+            courseMap.put("credit",course.getCredit()+"");
+            courseMap.put("coursePath",course.getCoursePath());
+            preCourse =course.getPreCourse();
+            if(preCourse != null) {
+                courseMap.put("preCourse",preCourse.getName());
+                    courseMap.put("preCourseId",preCourse.getCourseId());
             }
-            dataList.add(m);
+            dataList.add(courseMap);
         }
         return CommonMethod.getReturnData(dataList);
     }
@@ -50,39 +50,39 @@ public class CourseService {
         String coursePath = dataRequest.getString("coursePath");
         Integer credit = dataRequest.getInteger("credit");
         Integer preCourseId = dataRequest.getInteger("preCourseId");
-        Optional<Course> op;
-        Course c= null;
+        Optional<Course> originalCourse;
+        Course course= null;
 
         if(courseId != null) {
-            op = courseRepository.findById(courseId);
-            if(op.isPresent())
-                c= op.get();
+            originalCourse = courseRepository.findById(courseId);
+            if(originalCourse.isPresent())
+                course= originalCourse.get();
         }
-        if(c== null)
-            c = new Course();
-        Course pc =null;
+        if(course== null)
+            course = new Course();
+        Course preCourse =null;
         if(preCourseId != null) {
-            op = courseRepository.findById(preCourseId);
-            if(op.isPresent())
-                pc = op.get();
+            originalCourse = courseRepository.findById(preCourseId);
+            if(originalCourse.isPresent())
+                preCourse = originalCourse.get();
         }
-        c.setNum(num);
-        c.setName(name);
-        c.setCredit(credit);
-        c.setCoursePath(coursePath);
-        c.setPreCourse(pc);
-        courseRepository.save(c);
+        course.setNum(num);
+        course.setName(name);
+        course.setCredit(credit);
+        course.setCoursePath(coursePath);
+        course.setPreCourse(preCourse);
+        courseRepository.save(course);
         return CommonMethod.getReturnMessageOK();
     }
     public DataResponse courseDelete(DataRequest dataRequest) {
         Integer courseId = dataRequest.getInteger("courseId");
-        Optional<Course> op;
-        Course c= null;
+        Optional<Course> originalCourse;
+        Course course= null;
         if(courseId != null) {
-            op = courseRepository.findById(courseId);
-            if(op.isPresent()) {
-                c = op.get();
-                courseRepository.delete(c);
+            originalCourse = courseRepository.findById(courseId);
+            if(originalCourse.isPresent()) {
+                course = originalCourse.get();
+                courseRepository.delete(course);
             }
         }
         return CommonMethod.getReturnMessageOK();
