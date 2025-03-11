@@ -17,7 +17,7 @@ public class CourseService {
         this.courseRepository = courseRepository;
 //        this.personRepository = personRepository;
     }
-
+//随便改一改
     public DataResponse getCourseList(DataRequest dataRequest) {
         String numName = dataRequest.getString("numName");
         if(numName == null)
