@@ -29,6 +29,12 @@ public class TeacherController {
         return teacherService.deleteTeacher(dataRequest);
     }
 
+    @PostMapping("/addTeacher")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse addTeacher(@Valid @RequestBody DataRequest dataRequest){
+        return teacherService.addTeacher(dataRequest);
+    }
+
     @PutMapping("/editTeacherInfo")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse editTeacherInfo(@Valid @RequestBody DataRequest dataRequest){

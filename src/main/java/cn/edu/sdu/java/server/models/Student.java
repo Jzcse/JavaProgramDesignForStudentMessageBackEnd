@@ -22,6 +22,8 @@ import jakarta.validation.constraints.Size;
         })
 public class Student {
     @Id //表明personId是主键
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "student_id")
     private Integer personId;
 
     @OneToOne //表明是一对一的关系,一个学生对应一个Person对象

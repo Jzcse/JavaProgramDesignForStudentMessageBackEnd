@@ -2,6 +2,8 @@ package cn.edu.sdu.java.server.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.Comment;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * teacher 教师实体类，保存每个教师的信息
@@ -15,6 +17,8 @@ import jakarta.validation.constraints.Size;
 @Entity
 public class Teacher {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "teacher_id")
     private Integer personId;
 
     @OneToOne
