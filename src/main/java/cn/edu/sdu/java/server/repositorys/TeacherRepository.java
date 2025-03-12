@@ -13,6 +13,6 @@ public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
     @Query(value = "SELECT teacher FROM Teacher teacher WHERE teacher.personId = :personId", nativeQuery = true)
     Teacher findByPersonId(Integer personId);
 
-    @Query(value = "SELECT teacher FROM Teacher teacher WHERE teacher.name LIKE name", nativeQuery = true)
+    @Query(value = "SELECT teacher FROM Teacher teacher WHERE teacher.name LIKE CONCAT('%', :name, '%')", nativeQuery = true)
     List<Teacher> findByTeacherName(String name);
 }

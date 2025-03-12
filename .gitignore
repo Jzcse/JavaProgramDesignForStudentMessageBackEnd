@@ -35,3 +35,5 @@ build/
 # Maven Wrapper files
 mvnw
 mvnw.cmd
+
+logs/

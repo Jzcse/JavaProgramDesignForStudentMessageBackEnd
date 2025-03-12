@@ -23,11 +23,11 @@ public class CourseService {
         if(numName == null)
             numName = "";
         List<Course> courseList = courseRepository.findCourseListByNumName(numName);  //数据库查询操作
-        List dataList = new ArrayList();
-        Map courseMap;
+        List<Map<String,Object>> dataList = new ArrayList<>();
+        Map<String,Object> courseMap;
         Course preCourse;
         for (Course course : courseList) {
-            courseMap = new HashMap();
+            courseMap = new HashMap<>();
             courseMap.put("courseId", course.getCourseId()+"");
             courseMap.put("num",course.getNum());
             courseMap.put("name",course.getName());
@@ -77,7 +77,7 @@ public class CourseService {
     public DataResponse courseDelete(DataRequest dataRequest) {
         Integer courseId = dataRequest.getInteger("courseId");
         Optional<Course> originalCourse;
-        Course course= null;
+        Course course;
         if(courseId != null) {
             originalCourse = courseRepository.findById(courseId);
             if(originalCourse.isPresent()) {
