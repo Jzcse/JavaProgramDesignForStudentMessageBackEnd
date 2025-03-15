@@ -183,7 +183,6 @@ public class StudentService {
             isNew = true;
         } else {
             p = s.getPerson();
-            isNew = false;
         }
         personId = p.getPersonId();
         if (!num.equals(p.getNum())) {   //如果人员编号变化，修改人员编号和登录账号

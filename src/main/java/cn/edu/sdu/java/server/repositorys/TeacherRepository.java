@@ -11,9 +11,11 @@ import java.util.List;
 @Repository
 public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
 
-    @Query(value = "SELECT teacher FROM Teacher teacher WHERE teacher.personId = :personId", nativeQuery = true)
+    @Query("SELECT teacher FROM Teacher teacher WHERE teacher.personId = :personId")
     Teacher findByPersonId(@Param("personId") Integer personId);
 
-    @Query(value = "SELECT teacher FROM Teacher teacher WHERE teacher.person.name LIKE :name", nativeQuery = true)
+    @Query("SELECT teacher FROM Teacher teacher WHERE teacher.person.name LIKE :name")
     List<Teacher> findByTeacherName(@Param("name") String name);
+
+
 }
