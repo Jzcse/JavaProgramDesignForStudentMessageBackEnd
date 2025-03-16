@@ -23,7 +23,7 @@ public class TeacherController {
         return teacherService.getTeacherList(dataRequest);
     }
 
-    @DeleteMapping("/deleteTeacher")
+    @PostMapping("/deleteTeacher")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse deleteTeacher(@Valid @RequestBody DataRequest dataRequest){
         return teacherService.deleteTeacher(dataRequest);
@@ -35,21 +35,27 @@ public class TeacherController {
         return teacherService.addTeacher(dataRequest);
     }
 
-    @PutMapping("/editTeacherInfo")
+    @PostMapping("/editTeacherInfo")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse editTeacherInfo(@Valid @RequestBody DataRequest dataRequest){
         return teacherService.editTeacherInfo(dataRequest);
     }
 
-    @GetMapping("/getTeacherInfo")
+    @PostMapping("/getTeacherInfo")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse getTeacherInfo(@Valid @RequestBody DataRequest dataRequest){
         return teacherService.getTeacherInfo(dataRequest);
     }
 
-    @GetMapping("/searchTeacherByName")
+    @PostMapping("/searchTeacherByName")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse searchTeacherByName(@Valid @RequestBody DataRequest dataRequest){
         return teacherService.searchTeacherByName(dataRequest);
+    }
+
+    @PostMapping("/searchTeacherByNum")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse searchTeacherByNum(@Valid @RequestBody DataRequest dataRequest){
+        return teacherService.searchTeacherByNum(dataRequest);
     }
 }

@@ -61,8 +61,8 @@ public class TeacherService {
             return dataResponse;
         }
         //处理默认页数及大小关系
-        if (page <= 0){
-            page = 1;
+        if (page < 0){
+            page = 0;
         }
         if (size < 10){
             size = 10;
@@ -74,7 +74,7 @@ public class TeacherService {
         Pageable pageable = PageRequest.of(page, size);
         List<Teacher> teacherList = teacherRepository.findAll(pageable).getContent();
         //get teacher map list
-        List<Map<String, Map<String, String>>> mapList = new ArrayList<>();
+        List<Map<String, String>> mapList = new ArrayList<>();
         for (Teacher teacher : teacherList) {
             Person person = teacher.getPerson();
             //teacher
@@ -94,10 +94,10 @@ public class TeacherService {
             personMap.put("type", person.getType());
             personMap.put("phone", person.getPhone());
             personMap.put("introduce", person.getIntroduce());
+            personMap.put("personId", person.getPersonId().toString());
             //to end map
-            Map<String, Map<String, String>> map = new HashMap<>();
-            map.put("teacherMap", teacherMap);
-            map.put("personMap", personMap);
+            Map<String, String> map = new HashMap<>(teacherMap);
+            map.putAll(personMap);
             //to list
             mapList.add(map);
         }
@@ -146,47 +146,34 @@ public class TeacherService {
     public DataResponse editTeacherInfo(@Valid DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
         Map form = dataRequest.getMap("form");
-        String num = CommonMethod.getString(form, "num");
-        Teacher teahcer = null;
-        Person person;
-        User user;
-        Optional<Teacher> teacherOptional;
-        if (personId != null) {
-            teacherOptional = teacherRepository.findById(personId);//查询对应数据库中主键为id的值的实体对象
-            if (teacherOptional.isPresent()) {
-                teahcer = teacherOptional.get();
-            }
+        String num = CommonMethod.getString(form,"num");
+        Teacher teacherTemp = teacherRepository.findByNum(num);
+        if (teacherTemp == null || teacherTemp.getPerson().getPersonId().equals(personId)){
+            Teacher teacher = teacherRepository.findByPersonId(personId);
+            Person person = teacher.getPerson();
+            teacher.setTitle(CommonMethod.getString(form, "title"));
+            teacher.setMajor(CommonMethod.getString(form, "major"));
+            person.setName(CommonMethod.getString(form, "name"));
+            person.setDept(CommonMethod.getString(form, "dept"));
+            person.setCard(CommonMethod.getString(form, "card"));
+            person.setGender(CommonMethod.getString(form, "gender"));
+            person.setBirthday(CommonMethod.getString(form, "birthday"));
+            person.setEmail(CommonMethod.getString(form, "email"));
+            person.setPhone(CommonMethod.getString(form, "phone"));
+            person.setAddress(CommonMethod.getString(form, "address"));
+            person.setNum(CommonMethod.getString(form, "num"));
+            personRepository.save(person);
+            teacherRepository.save(teacher);
+            DataResponse dataResponse = new DataResponse();
+            dataResponse.setMsg("保存成功!");
+            dataResponse.setCode(0);
+            return dataResponse;
+        } else {
+            DataResponse dataResponse = new DataResponse();
+            dataResponse.setCode(1);
+            dataResponse.setMsg("工号不能和已有的重复");
+            return dataResponse;
         }
-
-        Optional<Person> nOp = personRepository.findByNum(num); //查询是否存在num的人员
-        if (nOp.isPresent()) {
-            if (teahcer != null && teahcer.getPerson().getNum().equals(num)) {
-                person = teahcer.getPerson();
-                personId = person.getPersonId();
-                Optional<User> userOptional = userRepository.findByPersonPersonId(personId);
-                if (userOptional.isPresent()) {
-                    user = userOptional.get();
-                    user.setUserName(num);
-                    userRepository.saveAndFlush(user);
-                }
-                person.setNum(num);
-                person.setName(CommonMethod.getString(form, "name"));
-                person.setDept(CommonMethod.getString(form, "dept"));
-                person.setCard(CommonMethod.getString(form, "card"));
-                person.setGender(CommonMethod.getString(form, "gender"));
-                person.setBirthday(CommonMethod.getString(form, "birthday"));
-                person.setEmail(CommonMethod.getString(form, "email"));
-                person.setPhone(CommonMethod.getString(form, "phone"));
-                person.setAddress(CommonMethod.getString(form, "address"));
-                personRepository.save(person);  // 修改保存人员信息
-                teahcer.setMajor(CommonMethod.getString(form, "major"));
-                teahcer.setTitle(CommonMethod.getString(form, "title"));
-                teacherRepository.save(teahcer);  //修改保存教师信息
-                systemService.modifyLog(teahcer, true);
-                return CommonMethod.getReturnData(teahcer.getPersonId());  // 将personId返回前端
-            }
-        }
-            return CommonMethod.getReturnMessageError("id不存在，不能添加或修改！");
     }
 
         /**
@@ -205,7 +192,6 @@ public class TeacherService {
                 if (person.isPresent()) {
                     Map<String, String> teacherMap = new HashMap<>();
                     Map<String, String> personMap = new HashMap<>();
-                    List<Map<String, String>> rList = new ArrayList<>();
                     //person
                     Person personPojo = person.get();
                     personMap.put("address", personPojo.getAddress());
@@ -223,10 +209,10 @@ public class TeacherService {
                     Teacher teacherPojo = teacherRepository.findByPersonId(personId);
                     teacherMap.put("major", teacherPojo.getMajor());
                     teacherMap.put("title", teacherPojo.getTitle());
-                    //to List
-                    rList.add(personMap);
-                    rList.add(teacherMap);
-                    dataResponse.setData(rList);
+                    //to one map
+                    Map<String, String> map = new HashMap<>(teacherMap);
+                    map.putAll(personMap);
+                    dataResponse.setData(map);
                     dataResponse.setMsg("success");
                     dataResponse.setCode(0);
                 } else {
@@ -252,7 +238,7 @@ public class TeacherService {
             } else {
                 List<Teacher> teacherList = teacherRepository.findByTeacherName("%" + name + "%");
                 //get teacher map list
-                List<Map<String, Map<String, String>>> mapList = new ArrayList<>();
+                List<Map<String, String>> mapList = new ArrayList<>();
                 for (Teacher teacher : teacherList) {
                     Person person = teacher.getPerson();
                     //teacher
@@ -273,9 +259,8 @@ public class TeacherService {
                     personMap.put("phone", person.getPhone());
                     personMap.put("introduce", person.getIntroduce());
                     //to end map
-                    Map<String, Map<String, String>> map = new HashMap<>();
-                    map.put("teacherMap", teacherMap);
-                    map.put("personMap", personMap);
+                    Map<String, String> map = new HashMap<>(teacherMap);
+                    map.putAll(personMap);
                     //to list
                     mapList.add(map);
                 }
@@ -292,9 +277,6 @@ public class TeacherService {
      * @return dataResponse
      */
     public DataResponse addTeacher(@Valid DataRequest dataRequest) {
-        User userPojo = new User();
-        Teacher teacherPojo = new Teacher();
-        Person personPojo = new Person();
         Map teacherMap = dataRequest.getMap("teacherMap");
         Map personMap = dataRequest.getMap("personMap");
         DataResponse dataResponse = new DataResponse();
@@ -304,6 +286,16 @@ public class TeacherService {
             dataResponse.setData(null);
             return dataResponse;
         } else {
+            String num = CommonMethod.getString(personMap, "num");
+            Teacher teacherTemp = teacherRepository.findByNum(num);
+            if (teacherTemp != null){
+                dataResponse.setMsg("工号不能和已有的重复");
+                dataResponse.setCode(1);
+                return dataResponse;
+            }
+            User userPojo = new User();
+            Teacher teacherPojo = new Teacher();
+            Person personPojo = new Person();
             //person
             personPojo.setType("2");
             personPojo.setAddress(CommonMethod.getString(personMap, "address"));
@@ -338,5 +330,47 @@ public class TeacherService {
             dataResponse.setMsg("新增教师成功！");
             return dataResponse;
         }
+    }
+
+    public DataResponse searchTeacherByNum(@Valid DataRequest dataRequest) {
+        String num = dataRequest.getString("num");
+        DataResponse dataResponse = new DataResponse();
+        if (num == null) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("名称为空!");
+        } else {
+            List<Teacher> teacherList = teacherRepository.findByTeacherNum("%" + num + "%");
+            //get teacher map list
+            List<Map<String, String>> mapList = new ArrayList<>();
+            for (Teacher teacher : teacherList) {
+                Person person = teacher.getPerson();
+                //teacher
+                Map<String, String> teacherMap = new HashMap<>();
+                teacherMap.put("title", teacher.getTitle());
+                teacherMap.put("major", teacher.getMajor());
+                //person
+                Map<String, String> personMap = new HashMap<>();
+                personMap.put("address", person.getAddress());
+                personMap.put("birthday", person.getBirthday());
+                personMap.put("card", person.getCard());
+                personMap.put("dept", person.getDept());
+                personMap.put("email", person.getEmail());
+                personMap.put("gender", person.getGender());
+                personMap.put("name", person.getName());
+                personMap.put("num", person.getNum());
+                personMap.put("type", person.getType());
+                personMap.put("phone", person.getPhone());
+                personMap.put("introduce", person.getIntroduce());
+                //to end map
+                Map<String, String> map = new HashMap<>(teacherMap);
+                map.putAll(personMap);
+                //to list
+                mapList.add(map);
+            }
+            dataResponse.setData(mapList);
+            dataResponse.setCode(0);
+            dataResponse.setMsg("success");
+        }
+        return dataResponse;
     }
 }

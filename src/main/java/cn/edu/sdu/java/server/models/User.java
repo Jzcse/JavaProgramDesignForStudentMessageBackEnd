@@ -22,6 +22,8 @@ import jakarta.validation.constraints.Size;
         })
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Integer personId;
 
     @ManyToOne() //指多个记录可以对应到多个记录上，这里是说多个用户可以关联到一个用户类型上

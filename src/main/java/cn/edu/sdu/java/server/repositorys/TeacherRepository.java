@@ -11,11 +11,16 @@ import java.util.List;
 @Repository
 public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
 
-    @Query("SELECT teacher FROM Teacher teacher WHERE teacher.personId = :personId")
+    @Query(value = "SELECT teacher FROM Teacher teacher WHERE teacher.person.personId = :personId", nativeQuery = false)
     Teacher findByPersonId(@Param("personId") Integer personId);
 
     @Query("SELECT teacher FROM Teacher teacher WHERE teacher.person.name LIKE :name")
     List<Teacher> findByTeacherName(@Param("name") String name);
 
+    @Query("SELECT teacher FROM Teacher teacher WHERE teacher.person.num LIKE :num")
+    List<Teacher> findByTeacherNum(@Param("num") String num);
 
+    //超超写的，本来可以直接改老师的，怕出问题
+    @Query("SELECT teacher FROM Teacher teacher WHERE teacher.person.num = :num")
+    Teacher findByNum(@Param("num") String num);
 }
