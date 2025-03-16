@@ -20,7 +20,6 @@ public interface TeacherRepository extends JpaRepository<Teacher, Integer> {
     @Query("SELECT teacher FROM Teacher teacher WHERE teacher.person.num LIKE :num")
     List<Teacher> findByTeacherNum(@Param("num") String num);
 
-    //超超写的，本来可以直接改老师的，怕出问题
     @Query("SELECT teacher FROM Teacher teacher WHERE teacher.person.num = :num")
     Teacher findByNum(@Param("num") String num);
 }
