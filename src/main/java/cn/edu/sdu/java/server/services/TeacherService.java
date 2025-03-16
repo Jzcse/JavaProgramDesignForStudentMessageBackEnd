@@ -33,7 +33,9 @@ public class TeacherService {
     @Autowired
     UserTypeRepository userTypeRepository;
 
-    private PasswordEncoder encoder;
+    @Autowired
+    PasswordEncoder encoder;
+
     @Autowired
     private SystemService systemService;
 
@@ -145,43 +147,43 @@ public class TeacherService {
         Integer personId = dataRequest.getInteger("personId");
         Map form = dataRequest.getMap("form");
         String num = CommonMethod.getString(form, "num");
-        Teacher t = null;
-        Person p;
-        User u;
-        Optional<Teacher> op;
+        Teacher teahcer = null;
+        Person person;
+        User user;
+        Optional<Teacher> teacherOptional;
         if (personId != null) {
-            op = teacherRepository.findById(personId);//查询对应数据库中主键为id的值的实体对象
-            if (op.isPresent()) {
-                t = op.get();
+            teacherOptional = teacherRepository.findById(personId);//查询对应数据库中主键为id的值的实体对象
+            if (teacherOptional.isPresent()) {
+                teahcer = teacherOptional.get();
             }
         }
 
         Optional<Person> nOp = personRepository.findByNum(num); //查询是否存在num的人员
         if (nOp.isPresent()) {
-            if (t != null && t.getPerson().getNum().equals(num)) {
-                p = t.getPerson();
-                personId = p.getPersonId();
-                Optional<User> uOp = userRepository.findByPersonPersonId(personId);
-                if (uOp.isPresent()) {
-                    u = uOp.get();
-                    u.setUserName(num);
-                    userRepository.saveAndFlush(u);
+            if (teahcer != null && teahcer.getPerson().getNum().equals(num)) {
+                person = teahcer.getPerson();
+                personId = person.getPersonId();
+                Optional<User> userOptional = userRepository.findByPersonPersonId(personId);
+                if (userOptional.isPresent()) {
+                    user = userOptional.get();
+                    user.setUserName(num);
+                    userRepository.saveAndFlush(user);
                 }
-                p.setNum(num);
-                p.setName(CommonMethod.getString(form, "name"));
-                p.setDept(CommonMethod.getString(form, "dept"));
-                p.setCard(CommonMethod.getString(form, "card"));
-                p.setGender(CommonMethod.getString(form, "gender"));
-                p.setBirthday(CommonMethod.getString(form, "birthday"));
-                p.setEmail(CommonMethod.getString(form, "email"));
-                p.setPhone(CommonMethod.getString(form, "phone"));
-                p.setAddress(CommonMethod.getString(form, "address"));
-                personRepository.save(p);  // 修改保存人员信息
-                t.setMajor(CommonMethod.getString(form, "major"));
-                t.setTitle(CommonMethod.getString(form, "title"));
-                teacherRepository.save(t);  //修改保存学生信息
-                systemService.modifyLog(t, true);
-                return CommonMethod.getReturnData(t.getPersonId());  // 将personId返回前端
+                person.setNum(num);
+                person.setName(CommonMethod.getString(form, "name"));
+                person.setDept(CommonMethod.getString(form, "dept"));
+                person.setCard(CommonMethod.getString(form, "card"));
+                person.setGender(CommonMethod.getString(form, "gender"));
+                person.setBirthday(CommonMethod.getString(form, "birthday"));
+                person.setEmail(CommonMethod.getString(form, "email"));
+                person.setPhone(CommonMethod.getString(form, "phone"));
+                person.setAddress(CommonMethod.getString(form, "address"));
+                personRepository.save(person);  // 修改保存人员信息
+                teahcer.setMajor(CommonMethod.getString(form, "major"));
+                teahcer.setTitle(CommonMethod.getString(form, "title"));
+                teacherRepository.save(teahcer);  //修改保存教师信息
+                systemService.modifyLog(teahcer, true);
+                return CommonMethod.getReturnData(teahcer.getPersonId());  // 将personId返回前端
             }
         }
             return CommonMethod.getReturnMessageError("id不存在，不能添加或修改！");
