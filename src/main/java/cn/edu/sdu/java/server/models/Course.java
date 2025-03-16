@@ -4,6 +4,8 @@ package cn.edu.sdu.java.server.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.Getter;
 
 
 /**
@@ -18,7 +20,9 @@ import jakarta.validation.constraints.Size;
 @Table(	name = "course",
         uniqueConstraints = {
         })
+@Data
 public class Course  {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer courseId;
@@ -34,52 +38,13 @@ public class Course  {
     private Course preCourse;
     @Size(max = 12)
     private String coursePath;
+    @Column(name = "classroom")
+    private String classroom;
+    @Column(name = "day_of_week")
+    private String dayOfWeek;
+    @Column(name = "start_time")
+    private String startTime;
+    @Column(name = "end_time")
+    private String endTime;
 
-    public Integer getCourseId() {
-        return courseId;
-    }
-
-    public void setCourseId(Integer courseId) {
-        this.courseId = courseId;
-    }
-
-    public String getNum() {
-        return num;
-    }
-
-    public void setNum(String num) {
-        this.num = num;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getCredit() {
-        return credit;
-    }
-
-    public void setCredit(Integer credit) {
-        this.credit = credit;
-    }
-
-    public Course getPreCourse() {
-        return preCourse;
-    }
-
-    public void setPreCourse(Course preCourse) {
-        this.preCourse = preCourse;
-    }
-
-    public String getCoursePath() {
-        return coursePath;
-    }
-
-    public void setCoursePath(String coursePath) {
-        this.coursePath = coursePath;
-    }
 }
