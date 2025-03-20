@@ -58,4 +58,10 @@ public class TeacherController {
     public DataResponse searchTeacherByNum(@Valid @RequestBody DataRequest dataRequest){
         return teacherService.searchTeacherByNum(dataRequest);
     }
+
+    @PostMapping("/getTeacherCount")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse getTeacherCount(DataRequest dataRequest){
+        return teacherService.getTeacherCount(dataRequest);
+    }
 }

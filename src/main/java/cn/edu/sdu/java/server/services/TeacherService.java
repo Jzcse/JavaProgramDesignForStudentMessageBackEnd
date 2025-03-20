@@ -332,6 +332,11 @@ public class TeacherService {
         }
     }
 
+    /**
+     * 通过工号查询老师
+     * @param dataRequest { num }
+     * @return dataResponse
+     */
     public DataResponse searchTeacherByNum(@Valid DataRequest dataRequest) {
         String num = dataRequest.getString("num");
         DataResponse dataResponse = new DataResponse();
@@ -371,6 +376,25 @@ public class TeacherService {
             dataResponse.setCode(0);
             dataResponse.setMsg("success");
         }
+        return dataResponse;
+    }
+
+    /**
+     * 获取教师记录数
+     * @param dataRequest { null }
+     * @return dataResponse
+     */
+    public DataResponse getTeacherCount(DataRequest dataRequest){
+        long count = teacherRepository.count();
+        String countString = Long.toString(count);
+        //to map
+        Map<String, String> map = new HashMap<>();
+        map.put("count", countString);
+        //to response
+        DataResponse dataResponse = new DataResponse();
+        dataResponse.setCode(0);
+        dataResponse.setData(map);
+        dataResponse.setMsg("success");
         return dataResponse;
     }
 }
