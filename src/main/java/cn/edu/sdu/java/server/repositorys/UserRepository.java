@@ -21,7 +21,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-    @Query(value = "SELECT user FROM User user WHERE user.personId = personId :personId", nativeQuery = true)
+    @Query(value = "SELECT user FROM User user WHERE user.person.personId = :personId")
     User findByPersonId(Integer personId);
 
     Optional<User> findByUserName(String userName);
