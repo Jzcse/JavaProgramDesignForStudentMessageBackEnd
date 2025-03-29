@@ -64,4 +64,13 @@ public class TeacherController {
     public DataResponse getTeacherCount(DataRequest dataRequest){
         return teacherService.getTeacherCount(dataRequest);
     }
+
+    @PostMapping("demo")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse demo(DataRequest dataRequest){
+        DataResponse dataResponse = new DataResponse();
+        Integer integer = 1;
+        dataResponse.setData(integer);
+        return dataResponse;
+    }
 }

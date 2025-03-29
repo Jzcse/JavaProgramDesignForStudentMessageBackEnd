@@ -7,14 +7,13 @@ import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.ComDataUtil;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import cn.edu.sdu.java.server.util.DateTimeTool;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,10 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
 
@@ -65,7 +61,7 @@ public class StudentService {
         p = s.getPerson();
         if(p == null)
             return m;
-        m.put("personId", s.getPersonId());
+        m.put("personId", p.getPersonId());
         m.put("num",p.getNum());
         m.put("name",p.getName());
         m.put("dept",p.getDept());
@@ -130,15 +126,107 @@ public class StudentService {
 
     public DataResponse getStudentInfo(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
-        Student s = null;
-        Optional<Student> op;
+        Student student = null;
         if (personId != null) {
-            op = studentRepository.findById(personId); //根据学生主键从数据库查询学生的信息
-            if (op.isPresent()) {
-                s = op.get();
-            }
+            student = studentRepository.findStudentByPersonId(personId.toString()); //根据学生主键从数据库查询学生的信息
         }
-        return CommonMethod.getReturnData(getMapFromStudent(s)); //这里回传包含学生信息的Map对象
+        return CommonMethod.getReturnData(getMapFromStudent(student)); //这里回传包含学生信息的Map对象
+    }
+
+    /**
+     * 添加新的学生
+     * @param dataRequest { map }
+     * @return dataResponse
+     */
+    public DataResponse addStudent(DataRequest dataRequest){
+        Map<String, String> map = dataRequest.getMap("map");
+        String name = CommonMethod.getString(map, "name");
+        String num = CommonMethod.getString(map, "num");
+        DataResponse dataResponse = new DataResponse();
+        if (name.isEmpty() || num.isEmpty()){
+            dataResponse.setMsg("名称或学号不能为空");
+            dataResponse.setCode(1);
+            return dataResponse;
+        }
+        Student student = studentRepository.findStudentByPersonNum(num);
+        if (student != null) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("该学号已存在，无法添加");
+            return dataResponse;
+        }
+        student = new Student();
+        Person person = new Person();
+        User user = new User();
+        student.setClassName(CommonMethod.getString(map, "className"));
+        student.setMajor(CommonMethod.getString(map, "major"));
+        person.setNum(CommonMethod.getString(map, "num"));
+        person.setName(CommonMethod.getString(map, "name"));
+        person.setDept(CommonMethod.getString(map, "dept"));
+        person.setPhone(CommonMethod.getString(map, "phone"));
+        person.setGender(CommonMethod.getString(map, "gender"));
+        person.setEmail(CommonMethod.getString(map, "email"));
+        person.setCard(CommonMethod.getString(map, "card"));
+        person.setType("1");
+        person.setAddress(CommonMethod.getString(map, "address"));
+        person.setBirthday(CommonMethod.getString(map, "birthday"));
+        personRepository.save(person);
+        Integer personId = person.getPersonId();
+        user.setUserType(userTypeRepository.findByName(EUserType.ROLE_STUDENT));
+        user.setUserName(num);
+        user.setCreateTime(DateTimeTool.parseDateTime(new Date()));
+        user.setPassword(encoder.encode("123456"));
+        user.setCreatorId(personId);
+        user.setLoginCount(0);
+        user.setPerson(person);
+        userRepository.save(user);
+        student.setPerson(person);
+        studentRepository.save(student);
+        dataResponse.setMsg("添加成功");
+        dataResponse.setCode(0);
+        return dataResponse;
+    }
+
+    /**
+     * 修改已有学生的相关信息
+     * @param dataRequest { map }
+     * @return dataResponse
+     */
+    public DataResponse editStudentInfo(DataRequest dataRequest){
+        Map<String, String> map = dataRequest.getMap("map");
+        String num = CommonMethod.getString(map, "num");
+        String name = CommonMethod.getString(map, "name");
+        DataResponse dataResponse = new DataResponse();
+        if ( num.isEmpty() || name.isEmpty() ){
+            dataResponse.setCode(1);
+            dataResponse.setMsg("名称或学号不能为空");
+            return dataResponse;
+        }
+        String personId = CommonMethod.getString(map, "personId");
+        Student student = studentRepository.findStudentByPersonNum(num);
+        if (student == null || student.getPerson().getPersonId().toString().equals(personId)){
+            student = studentRepository.findStudentByPersonId(personId);
+            Person person = student.getPerson();
+            person.setNum(CommonMethod.getString(map, "num"));
+            person.setName(CommonMethod.getString(map, "name"));
+            person.setDept(CommonMethod.getString(map, "dept"));
+            person.setPhone(CommonMethod.getString(map, "phone"));
+            person.setGender(CommonMethod.getString(map, "gender"));
+            person.setEmail(CommonMethod.getString(map, "email"));
+            person.setCard(CommonMethod.getString(map, "card"));
+            person.setType("1");
+            person.setAddress(CommonMethod.getString(map, "address"));
+            person.setBirthday(CommonMethod.getString(map, "birthday"));
+            student.setClassName(CommonMethod.getString(map, "className"));
+            student.setMajor(CommonMethod.getString(map, "major"));
+            personRepository.save(person);
+            studentRepository.save(student);
+            dataResponse.setMsg("success");
+            dataResponse.setCode(0);
+        } else {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("该学号已存在，无法修改");
+        }
+        return dataResponse;
     }
 
     public DataResponse studentEditSave(DataRequest dataRequest) {
@@ -178,7 +266,7 @@ public class StudentService {
             u.setCreatorId(CommonMethod.getPersonId());
             userRepository.saveAndFlush(u); //插入新的User记录
             s = new Student();   // 创建实体对象
-            s.setPersonId(personId);
+            s.setStudentId(personId);
             studentRepository.saveAndFlush(s);  //插入新的Student记录
             isNew = true;
         } else {
@@ -207,7 +295,7 @@ public class StudentService {
         s.setClassName(CommonMethod.getString(form, "className"));
         studentRepository.save(s);  //修改保存学生信息
         systemService.modifyLog(s,isNew);
-        return CommonMethod.getReturnData(s.getPersonId());  // 将personId返回前端
+        return CommonMethod.getReturnData(s.getStudentId());  // 将personId返回前端
     }
 
     public List getStudentScoreList(List<Score> sList) {
@@ -438,14 +526,14 @@ public class StudentService {
      */
     public DataResponse getFamilyMemberList(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
-        List<FamilyMember> fList = familyMemberRepository.findByStudentPersonId(personId);
+        List<FamilyMember> fList = familyMemberRepository.findByPersonId(personId.toString());
         List dataList = new ArrayList();
         Map m;
         if (fList != null) {
             for (FamilyMember f : fList) {
                 m = new HashMap();
-                m.put("memberId", f.getMemberId());
-                m.put("personId", f.getStudent().getPersonId());
+                m.put("memberId", f.getMemberId().toString());
+                m.put("personId", f.getStudent().getStudentId());
                 m.put("relation", f.getRelation());
                 m.put("name", f.getName());
                 m.put("gender", f.getGender());

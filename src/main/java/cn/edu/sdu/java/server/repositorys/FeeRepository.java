@@ -1,8 +1,10 @@
 package cn.edu.sdu.java.server.repositorys;
 
 import cn.edu.sdu.java.server.models.Fee;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,12 +16,13 @@ import java.util.Optional;
  */
 public interface FeeRepository extends JpaRepository<Fee,Integer> {
 
-    Optional<Fee> findByStudentPersonIdAndDay(Integer personId, String day);
+    @Query("select fee from Fee fee where fee.student.person.id = :personId and fee.day = :day")
+    Optional<Fee> findByStudentPersonIdAndDay(@Param("personId") Integer personId, @Param("day") String day);
 
-    @Query(value= "from Fee where student.personId=?1 order by day")
+    @Query(value= "from Fee where student.person.id=?1 order by day")
     List<Fee> findListByStudent(Integer personId);
 
-    @Query(value = "select sum(money) from Fee where student.personId=?1 and day like ?2%")
+    @Query(value = "select sum(money) from Fee where student.person.id=?1 and day like ?2%")
     Double getMoneyByPersonIdAndDate(Integer personId,String date);
 
 }

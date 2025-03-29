@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
 
 /**
@@ -16,6 +17,7 @@ import jakarta.validation.constraints.Size;
  */
 
  //在Java JPA中，支持将对Java的对象操作映射为数据库记录的操作，这里我们设计了一个实体类Student映射数据库的表student
+@Data
 @Entity //表示这是一个实体类
 @Table(	name = "student", //映射到数据库为student，Table来指定与那个表对应
         uniqueConstraints = {
@@ -24,7 +26,7 @@ public class Student {
     @Id //表明personId是主键
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_id")
-    private Integer personId;
+    private Integer studentId;
 
     @OneToOne //表明是一对一的关系,一个学生对应一个Person对象
     @JoinColumn(name="person_id")
@@ -36,41 +38,4 @@ public class Student {
 
     @Size(max = 50)
     private String className;
-
-    public Integer getPersonId() {
-        return personId;
-    }
-
-    public void setPersonId(Integer personId) {
-        this.personId = personId;
-    }
-
-    public Person getPerson() {
-        return person;
-    }
-
-    public void setPerson(Person person) {
-        this.person = person;
-    }
-
-    public String getMajor() {
-        return major;
-    }
-
-    public void setMajor(String major) {
-        this.major = major;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public String getNumName(){
-        return person.getNum()+"-" + person.getName();
-    }
-
 }

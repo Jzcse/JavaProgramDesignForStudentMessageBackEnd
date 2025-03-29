@@ -30,7 +30,7 @@ public class ScoreService {
 //        OptionItem item;这里暂时没用到
         List<OptionItem> itemList = new ArrayList<>();
         for (Student s : studentList) {
-            itemList.add(new OptionItem( s.getPersonId(),s.getPersonId()+"", s.getPerson().getNum()+"-"+s.getPerson().getName()));
+            itemList.add(new OptionItem( s.getStudentId(),s.getStudentId()+"", s.getPerson().getNum()+"-"+s.getPerson().getName()));
         }
         return new OptionItemList(0, itemList);
     }
@@ -58,7 +58,7 @@ public class ScoreService {
         for (Score s : studentList) {
             studentMap = new HashMap<>();
             studentMap.put("scoreId", s.getScoreId()+"");
-            studentMap.put("personId",s.getStudent().getPersonId()+"");
+            studentMap.put("personId",s.getStudent().getStudentId()+"");
             studentMap.put("courseId",s.getCourse().getCourseId()+"");
             studentMap.put("studentNum",s.getStudent().getPerson().getNum());
             studentMap.put("studentName",s.getStudent().getPerson().getName());

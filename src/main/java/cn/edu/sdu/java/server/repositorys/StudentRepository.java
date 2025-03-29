@@ -1,6 +1,7 @@
 package cn.edu.sdu.java.server.repositorys;
 
 import cn.edu.sdu.java.server.models.Student;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,15 +19,25 @@ import java.util.Optional;
  */
 
 public interface StudentRepository extends JpaRepository<Student,Integer> {
-    Optional<Student> findByPersonPersonId(Integer personId);
-    Optional<Student> findByPersonNum(String num);
-    List<Student> findByPersonName(String name);
+//    Optional<Student> findByPersonPersonId(Integer personId);
+//    Optional<Student> findByPersonNum(String num);
+//    List<Student> findByPersonName(String name);
 
-    @Query(value = "from Student where ?1='' or person.num like %?1% or person.name like %?1% ")
-    List<Student> findStudentListByNumName(String numName);
+//    @Query(value = "from Student where ?1='' or person.num like %?1% or person.name like %?1% ")
+//    List<Student> findStudentListByNumName(String numName);
+
+    @Query("select student from Student student where student.person.name like concat('%', :name ,'%') or student.person.num like concat('%', :name, '%')")
+    List<Student> findStudentListByNumName(@Param("name") String name);
 
 
-    @Query(value = "from Student where ?1='' or person.num like %?1% or person.name like %?1% ",
-            countQuery = "SELECT count(personId) from Student where ?1='' or person.num like %?1% or person.name like %?1% ")
+    @Query(value = "select student from Student student where ?1='' or student.person.num like %?1% or student.person.name like %?1% ",
+            countQuery = "SELECT count(student) from Student student where ?1='' or student.person.num like %?1% or student.person.name like %?1% ")
     Page<Student> findStudentPageByNumName(String numName,  Pageable pageable);
+
+    //这里是超超新写的，还未测试
+    @Query("select student from Student student where student.person.id = :personId")
+    Student findStudentByPersonId(@Param("personId") String personId);
+
+    @Query("select student from Student student where student.person.num = :num")
+    Student findStudentByPersonNum(@Param("num") String num);
 }

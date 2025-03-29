@@ -93,10 +93,16 @@ public class StudentController {
      *
      * @return 新建修改学生的主键 student_id 返回前端
      */
-    @PostMapping("/studentEditSave")
+    @PostMapping("/editStudentInfo")
     @PreAuthorize(" hasRole('ADMIN')")
     public DataResponse studentEditSave(@Valid @RequestBody DataRequest dataRequest) {
-        return studentService.studentEditSave(dataRequest);
+        return studentService.editStudentInfo(dataRequest);
+    }
+
+    @PostMapping("/addStudent")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse addStudent(@Valid @RequestBody DataRequest dataRequest) {
+        return studentService.addStudent(dataRequest);
     }
 
     /**

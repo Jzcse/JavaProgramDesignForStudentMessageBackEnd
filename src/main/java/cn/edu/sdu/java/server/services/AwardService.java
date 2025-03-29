@@ -156,7 +156,7 @@ public class AwardService {
         List<Score> scoreList = CommonMethod.getList(scoreMap,"scoreMap");
         for (Score score : scoreList) {
             if (isQualified(score)) {
-                Integer studentId = score.getStudent().getPersonId();
+                Integer studentId = score.getStudent().getStudentId();
                 Optional<Student> student = studentRepository.findById(studentId);
                 //在获奖人名单中添加获奖学生
                 student.ifPresent(candidates::add);
