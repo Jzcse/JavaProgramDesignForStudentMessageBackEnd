@@ -34,7 +34,7 @@ public interface StudentRepository extends JpaRepository<Student,Integer> {
             countQuery = "SELECT count(student) from Student student where ?1='' or student.person.num like %?1% or student.person.name like %?1% ")
     Page<Student> findStudentPageByNumName(String numName,  Pageable pageable);
 
-    //这里是超超新写的，还未测试
+    //这里是超超新写的，还未测
     @Query("select student from Student student where student.person.id = :personId")
     Student findStudentByPersonId(@Param("personId") String personId);
 
