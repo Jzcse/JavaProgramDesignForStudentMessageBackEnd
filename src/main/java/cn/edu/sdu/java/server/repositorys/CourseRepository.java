@@ -18,8 +18,13 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
     List<Course> findCourseListByNumName(String numName);
 
     Optional<Course> findByNum(String num);
-    List<Course> findByName(String name);
+    Optional<Course> findByName(String name);
 
     @Query(value = "from Course where classroom=?1 and dayOfWeek=?2")
     List<Course> findByClassroomAndDayOfWeek(String classroom, String dayOfWeek);
+    @Query(value = "select course from Course course where course.dayOfWeek=?1")
+    List<Course> findByDayOfWeek(String dayOfWeek);
+
+    @Query(value = "from Course where ?1='' or num like %?1% or name like %?2% ")
+    Optional<Course> findByNumAndName(String num, String name);
 }
