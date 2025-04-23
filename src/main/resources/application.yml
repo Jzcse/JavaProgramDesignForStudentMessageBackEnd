@@ -34,6 +34,11 @@ spring:
       charset: UTF-8
       enabled: true
       force: true
+  web:
+    resources:
+      static-locations: "files:${app.external-resources-dir}/"
+app:
+  external-resources-dir: ./static-resources
 attach:
   folder: /teach-2025/
 logging:
