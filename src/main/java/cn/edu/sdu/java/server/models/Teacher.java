@@ -2,6 +2,8 @@ package cn.edu.sdu.java.server.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Comment;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -16,11 +18,15 @@ import org.springframework.beans.factory.annotation.Value;
 @Table(name = "teacher")
 @Entity
 public class Teacher {
+    @Setter
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "teacher_id")
     private Integer personId;
 
+    @Setter
+    @Getter
     @OneToOne
     @JoinColumn(name = "person_id")
     @JsonIgnore
@@ -31,22 +37,6 @@ public class Teacher {
 
     @Size(max = 15)
     private String title;
-
-    public Integer getPersonId() {
-        return personId;
-    }
-
-    public void setPersonId(Integer personId) {
-        this.personId = personId;
-    }
-
-    public Person getPerson() {
-        return person;
-    }
-
-    public void setPerson(Person person) {
-        this.person = person;
-    }
 
     public @Size(max = 20) String getMajor() {
         return major;
