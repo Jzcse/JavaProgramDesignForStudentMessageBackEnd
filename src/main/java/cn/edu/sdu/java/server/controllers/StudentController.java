@@ -189,4 +189,10 @@ public class StudentController {
         return studentService.importFeeDataWeb(request, file);
     }
 
+    @PostMapping("/importStudentData")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse importStudentData(@RequestParam Map request, @RequestParam("file") MultipartFile file){
+        System.out.println("success");
+        return null;
+    };
 }
