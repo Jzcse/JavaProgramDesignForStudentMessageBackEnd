@@ -43,9 +43,7 @@ public class Course  {
     private String classroom;
     @Column(name = "day_of_week")
     private String dayOfWeek;
-    @Column(name = "start_time")
-    private String startTime;
-    @Column(name = "end_time")
-    private String endTime;
+    @Column(name = "time")
+    private String time;
 
 }

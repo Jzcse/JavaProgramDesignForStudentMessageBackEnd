@@ -22,6 +22,10 @@ public class CourseController {
         return courseService.getCourseList(dataRequest);
     }
 
+    @PostMapping("/getCourseId")
+    public DataResponse getCourseId(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getCourseId(dataRequest);
+    }
     @PostMapping("/courseAdd")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse courseAdd(@Valid @RequestBody DataRequest dataRequest) {
@@ -32,7 +36,7 @@ public class CourseController {
     public DataResponse courseDelete(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.courseDelete(dataRequest);
     }
-    @PutMapping("/courseUpdate")
+    @PostMapping("/courseUpdate")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse courseUpdate(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.courseUpdate(dataRequest);
@@ -59,6 +63,10 @@ public class CourseController {
     @PostMapping("/getCourseSchedule")
     public DataResponse getCourseSchedule(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getCourseSchedule(dataRequest);
+    }
+    @PostMapping ("/getWeekDaysList")
+    public DataResponse getWeekDaysList(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getWeekDaysList(dataRequest);
     }
 
 }
