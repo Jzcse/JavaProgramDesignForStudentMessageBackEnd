@@ -16,6 +16,12 @@ public class AwardController {
     @Autowired
     AwardService awardService;
 
+    @PostMapping("/getSelectedList")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse getSelectedList(@Valid @RequestBody DataRequest dataRequest){
+        return awardService.getSelectedList(dataRequest);
+    }
+
     @PostMapping("/addAward")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse addAward(@Valid @RequestBody DataRequest dataRequest){
@@ -46,10 +52,22 @@ public class AwardController {
         return awardService.setCandidatesList(dataRequest);
     }
 
-    @PostMapping("/getCandidatesListSize")
+    @PostMapping("/getCandidatesList")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse getCandidatesList(@Valid @RequestBody DataRequest dataRequest){
-        return awardService.getCandidatesListSize(dataRequest);
+        return awardService.getCandidatesList(dataRequest);
+    }
+
+    @PostMapping("/addCandidate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse addCandidate(@Valid @RequestBody DataRequest dataRequest){
+        return awardService.addCandidate(dataRequest);
+    }
+
+    @PostMapping("/CandidatesDelete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse CandidatesDelete(@Valid @RequestBody DataRequest dataRequest){
+        return awardService.CandidatesDelete(dataRequest);
     }
 
 }
