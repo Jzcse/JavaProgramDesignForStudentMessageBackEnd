@@ -1,17 +1,16 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.Award;
-import cn.edu.sdu.java.server.models.Score;
+import cn.edu.sdu.java.server.models.AwardPerson;
 import cn.edu.sdu.java.server.models.Student;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
+import cn.edu.sdu.java.server.repositorys.AwardPersonRepository;
 import cn.edu.sdu.java.server.repositorys.AwardRepository;
 import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +24,8 @@ public class AwardService {
 
     @Autowired
     StudentRepository studentRepository;
+    @Autowired
+    private AwardPersonRepository awardPersonRepository;
 
     @Transactional
     public DataResponse addAward(@Valid DataRequest datarequest) {
@@ -37,12 +38,12 @@ public class AwardService {
             dataResponse.setMsg("新增奖项列表不能为空");
             return dataResponse;
         }else {
-            award.setAwardId(CommonMethod.getInteger(awardMap,"awardId"));
             award.setAwardLevel(CommonMethod.getString(awardMap,"awardLevel"));
             award.setAwardName(CommonMethod.getString(awardMap,"awardName"));
-            award.setAwardStudentList(CommonMethod.getList(awardMap,"awardStudent"));
+            award.setAwardStudentList(CommonMethod.getList(awardMap,"awardStudentList"));
             award.setAwardTime(CommonMethod.getString(awardMap,"awardTime"));
             award.setAwardType(CommonMethod.getString(awardMap,"awardType"));
+            award.setAwardSize(CommonMethod.getInteger(awardMap,"awardSize"));
         }
         awardRepository.save(award);
 
@@ -51,16 +52,52 @@ public class AwardService {
         return dataResponse;
     }
 
+    public Map getMapFromAward(Award award) {
+        Map m = new HashMap();
+        if(award == null)
+            return m;
+        m.put("awardId",award.getAwardId());
+        m.put("awardName",award.getAwardName());
+        m.put("awardLevel",award.getAwardLevel());
+        m.put("awardTime",award.getAwardTime());
+        m.put("awardType",award.getAwardType());
+        m.put("awardSize",award.getAwardSize());
+        return m;
+    }
+
+    public List getAwardMapList(String awardName) {
+        List dataList = new ArrayList();
+        List<Award> awardList = awardRepository.findAwardListByAwardName(awardName);  //数据库查询操作
+        if (awardList == null || awardList.isEmpty())
+            return dataList;
+        for (int i = 0; i < awardList.size(); i++) {
+            dataList.add(getMapFromAward(awardList.get(i)));
+        }
+        return dataList;
+    }
+
+    public DataResponse getSelectedList(DataRequest dataRequest) {
+        String awardName = dataRequest.getString("awardName");
+        List dataList = getAwardMapList(awardName);
+        return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
+    }
+
     // 获取奖项列表
     public DataResponse getAwardList(@Valid DataRequest datarequest) {
         DataResponse dataResponse = new DataResponse();
-        Pageable awardPage = Pageable.ofSize(10);
         try {
-            List<Award> awardList = awardRepository.findByAwardName(datarequest.getString("awardName"),awardPage);
-            // 将 List 转换为 Map，这里简单以 awardId 作为 key
-            Map<Integer, Award> awardMap = new HashMap<>();
+            List<Award> awardList = awardRepository.findAll();
+            Map<Integer, Map<String, String>> awardMap = new HashMap<>();
             for (Award award : awardList) {
-                awardMap.put(award.getAwardId(), award);
+                Map<String, String> awardData = new HashMap<>();
+                awardData.put("awardId", String.valueOf(award.getAwardId()));
+                awardData.put("awardName", award.getAwardName());
+                awardData.put("awardLevel", award.getAwardLevel());
+                awardData.put("awardTime", award.getAwardTime());
+                awardData.put("awardType", award.getAwardType());
+                awardData.put("awardSize", String.valueOf(award.getAwardSize()));
+                // 其他属性也类似设置
+                awardMap.put(award.getAwardId(), awardData);
             }
             dataResponse.setData(awardMap);
             dataResponse.setCode(0);
@@ -72,14 +109,14 @@ public class AwardService {
         return dataResponse;
     }
 
-//if (awardId == null) 是对客户端请求数据的有效性进行验证，确保请求中包含必要的参数。
+
+    //if (awardId == null) 是对客户端请求数据的有效性进行验证，确保请求中包含必要的参数。
 //Optional 对象检测是对数据库查询结果的有效性进行验证，确保数据库中存在与请求 ID 对应的记录。
 //所以二者并不重复
     @Transactional
     public DataResponse deleteAward(@Valid DataRequest datarequest) {
+        Integer awardId = datarequest.getInteger("awardId");
         DataResponse dataResponse = new DataResponse();
-        Map deleteMap = datarequest.getMap("deleteMap");
-        Integer awardId = CommonMethod.getInteger(deleteMap, "awardId");
         if (awardId == null) {
             dataResponse.setCode(1);
             dataResponse.setMsg("awardId不能为空");
@@ -105,27 +142,30 @@ public class AwardService {
     @Transactional
     public DataResponse updateAward(@Valid DataRequest datarequest) {
         DataResponse dataResponse = new DataResponse();
-        Map awardMap = datarequest.getMap("awardMap");
-        Integer awardId = CommonMethod.getInteger(awardMap, "awardId");
-        if (awardId == null) {
+        Map awardMap = datarequest.getMap("form");
+        String awardIdstr = CommonMethod.getString(awardMap, "awardId");
+        double awardIdD = Double.parseDouble(awardIdstr);
+        Integer awardId = (int) awardIdD;
+        if (awardMap.isEmpty()) {
             dataResponse.setCode(1);
-            dataResponse.setMsg("awardId不能为空");
+            dataResponse.setMsg("更新奖项列表不能为空");
             return dataResponse;
         }
         try {
-            Optional<Award> award = awardRepository.findById(awardId);
+            Optional<Award> award = awardRepository.findAwardByAwardId(awardId);
             if (award.isEmpty()) {
                 dataResponse.setCode(1);
                 dataResponse.setMsg("该奖项不存在");
                 return dataResponse;
             }
             Award awardUpdate = award.get();
-            awardUpdate.setAwardId(CommonMethod.getInteger(awardMap,"awardId"));
             awardUpdate.setAwardLevel(CommonMethod.getString(awardMap,"awardLevel"));
             awardUpdate.setAwardName(CommonMethod.getString(awardMap,"awardName"));
             awardUpdate.setAwardStudentList(CommonMethod.getList(awardMap,"awardStudent"));
             awardUpdate.setAwardTime(CommonMethod.getString(awardMap,"awardTime"));
             awardUpdate.setAwardType(CommonMethod.getString(awardMap,"awardType"));
+            awardUpdate.setAwardSize(CommonMethod.getInteger(awardMap,"awardSize"));;
+
             awardRepository.save(awardUpdate);
             dataResponse.setCode(0);
             dataResponse.setMsg("修改奖项成功");
@@ -136,59 +176,140 @@ public class AwardService {
         return dataResponse;
     }
 
-    // 此方法需要更复杂的逻辑来判断学生是否获奖，这里仅作示例
-    public boolean isQualified(Score score) {
-        Integer scoreId = score.getScoreId();
-        Integer ranking = score.getRanking();
-        return ranking <= 3;
-    }
-    //设置获奖人名单
+    //设置获奖人名单，此功能也可以用于添加获奖候选人
     @Transactional
     public DataResponse setCandidatesList(@Valid DataRequest datarequest) {
         DataResponse dataResponse = new DataResponse();
-        Map scoreMap = datarequest.getMap("scoreMap");
-        List<Student> candidates= new ArrayList<>();
-        if(scoreMap.isEmpty()){
+        Map awardMap = datarequest.getMap("awardMap");
+        Map studentMap = datarequest.getMap("studentMap");
+        if(awardMap.isEmpty()){
             dataResponse.setCode(1);
-            dataResponse.setMsg("学生成绩列表不能为空");
+            dataResponse.setMsg("获取奖项信息失败");
             return dataResponse;
         }
-        List<Score> scoreList = CommonMethod.getList(scoreMap,"scoreMap");
-        for (Score score : scoreList) {
-            if (isQualified(score)) {
-                Integer studentId = score.getStudent().getStudentId();
-                Optional<Student> student = studentRepository.findById(studentId);
-                //在获奖人名单中添加获奖学生
-                student.ifPresent(candidates::add);
-            }
+        if(studentMap.isEmpty()){
+            dataResponse.setCode(1);
+            dataResponse.setMsg("获取学生信息失败");
+            return dataResponse;
         }
-        Award awardForCad = new Award();
-        awardForCad.setAwardStudentList(candidates);
-        awardRepository.save(awardForCad);
-        dataResponse.setCode(0);
-        dataResponse.setMsg("设置获奖学生成功");
         return dataResponse;
     }
 
-    //获取获奖人数量
-    public DataResponse getCandidatesListSize(@Valid DataRequest datarequest) {
-        Map awardMap = datarequest.getMap("awardMap");
+    @Transactional
+    public DataResponse addCandidate(@Valid DataRequest datarequest) {
         DataResponse dataResponse = new DataResponse();
-        if (awardMap.isEmpty()) {
+        Map studentMap = datarequest.getMap("studentMap");
+        String awardId = datarequest.getString("awardId");
+        String num = CommonMethod.getString(studentMap, "num");
+        Optional<Student> student = studentRepository.findStudentByNum(num);
+        if (student.isEmpty()) {
             dataResponse.setCode(1);
-            dataResponse.setMsg("要查询的获奖人列表不能为空");
+            dataResponse.setMsg("该学生不存在");
             return dataResponse;
         }
-        Integer TargetAwardId = CommonMethod.getInteger(awardMap, "awardId");
-        List<Student> awardList = null;
-        if (TargetAwardId != null) {
-            Optional<Award> TargetAward = awardRepository.findById(TargetAwardId);
-            awardList = TargetAward.get().getAwardStudentList();
+        Student studentSave = student.get();
+
+        Optional<Award> award = awardRepository.findById(Integer.parseInt(awardId));
+        Award awardSave = award.get();
+
+        if (studentMap.isEmpty()) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("学生信息不能为空");
+            return dataResponse;
         }
-        Integer awardListSize = awardList.size();
-        dataResponse.setData(awardListSize);
-        dataResponse.setCode(0);
-        dataResponse.setMsg("获取获奖人数量成功");
+        studentMap.put("gender", studentSave.getPerson().getGender());
+        studentMap.put("phone", studentSave.getPerson().getPhone());
+        studentMap.put("major", studentSave.getMajor());
+        studentMap.put("name", studentSave.getPerson().getName());
+        studentMap.put("email", studentSave.getPerson().getEmail());
+
+        AwardPerson awardPerson = new AwardPerson();
+        awardPerson.setStudentAge(CommonMethod.getInteger(studentMap, "age"));
+        awardPerson.setStudentGander(CommonMethod.getString(studentMap, "gender"));
+        awardPerson.setStudentPhone(CommonMethod.getString(studentMap, "phone"));
+        awardPerson.setStudentName(CommonMethod.getString(studentMap, "name"));
+        awardPerson.setStudentEmail(CommonMethod.getString(studentMap, "email"));
+        awardPerson.setAward(awardSave);
+
+        try {
+            awardPersonRepository.save(awardPerson);
+            awardSave.getAwardStudentList().add(awardPerson);
+            awardRepository.save(awardSave);
+            dataResponse.setCode(0);
+            dataResponse.setMsg("添加获奖学生成功");
+        }
+        catch (Exception e) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("添加获奖学生失败: " + e.getMessage());
+        }
         return dataResponse;
+    }
+
+    @Transactional
+    public DataResponse CandidatesDelete(@Valid DataRequest datarequest) {
+        DataResponse dataResponse = new DataResponse();
+        Map awardPersonMap = datarequest.getMap("awardPersonMap");
+        String awardPersonId = datarequest.getString("personId");
+        if (awardPersonMap.isEmpty()) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("学生信息不能为空");
+            return dataResponse;
+        }
+        try {
+            Optional<AwardPerson> awardPerson = awardPersonRepository.findById(Integer.parseInt(awardPersonId));
+            if (awardPerson.isEmpty()) {
+                dataResponse.setCode(1);
+                dataResponse.setMsg("该获奖学生不存在");
+                return dataResponse;
+            }
+            awardPersonRepository.deleteById(Integer.parseInt(awardPersonId));
+            dataResponse.setCode(0);
+            dataResponse.setMsg("删除获奖学生成功");
+            return dataResponse;
+        }
+        catch (Exception e) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("删除获奖学生失败: " + e.getMessage());
+            return dataResponse;
+        }
+    }
+
+    @Transactional
+    public DataResponse getCandidatesList(@Valid DataRequest datarequest) {
+        DataResponse dataResponse = new DataResponse();
+        Integer awardId = datarequest.getInteger("awardId");
+        if (awardId == null) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("awardId不能为空");
+        }
+        Optional<Award> award = awardRepository.findById(awardId);
+        if (award.isEmpty()) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("该奖项不存在");
+            return dataResponse;
+        }
+        List<AwardPerson> awardPersonList = award.get().getAwardStudentList();
+        List<Map<String, String>> mapList = new ArrayList<>();
+
+        for (AwardPerson awardPerson : awardPersonList) {
+            Map<String, String> map = getMapFromAwardPerson(awardPerson);
+            mapList.add(map);
+        }
+        dataResponse.setCode(0);
+        dataResponse.setMsg("获取获奖学生列表成功");
+        dataResponse.setData(mapList);
+        return dataResponse;
+    }
+
+    //
+    private Map<String, String> getMapFromAwardPerson(AwardPerson awardPerson) {
+        Map<String, String> map = new HashMap<>();
+        map.put("awardPersonId", String.valueOf(awardPerson.getAwardPersonId()));
+        map.put("name", awardPerson.getStudentName());
+        map.put("age", String.valueOf(awardPerson.getStudentAge()));
+        map.put("gander", awardPerson.getStudentGander());
+        map.put("phone", awardPerson.getStudentPhone());
+        map.put("email", awardPerson.getStudentEmail());
+        return map;
     }
 }
