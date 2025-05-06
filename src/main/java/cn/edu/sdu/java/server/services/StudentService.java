@@ -93,7 +93,7 @@ public class StudentService {
     }
 
     public DataResponse getStudentList(DataRequest dataRequest) {
-        String num = dataRequest.getString("num");
+        String num = dataRequest.getString("numName");
         List dataList = getStudentMapList(num);
         return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
     }
