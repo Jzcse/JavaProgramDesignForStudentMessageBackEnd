@@ -1,8 +1,5 @@
 package cn.edu.sdu.java.server.util;
 
-import cn.edu.sdu.java.server.models.Award;
-import cn.edu.sdu.java.server.models.Student;
-import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.services.UserDetailsImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,8 +23,6 @@ import java.util.*;
 public class CommonMethod {
     private static ObjectMapper mapper = new ObjectMapper();
     public static final MediaType exelType = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    private static DataRequest data;
-
     public static DataResponse getReturnData(Object obj, String msg){
         return new   DataResponse(0,obj,msg);
     }
@@ -201,16 +196,7 @@ public class CommonMethod {
         else
             return new ArrayList();
     }
-    public static List<Student> getStudentList(Map data, String key){
-        Object obj = data.get(key);
-        if(obj == null)
-            return new ArrayList();
-        if(obj instanceof List)
-            return (List<Student>)obj;
-        else
-            return new ArrayList();
-    }
-    public static Map getMap(String key){
+    public static Map getMap(Map data,String key){
         Object obj = data.get(key);
         if(obj == null)
             return new HashMap();
@@ -219,6 +205,7 @@ public class CommonMethod {
         else
             return new HashMap();
     }
+
     public static Integer getInteger(Map data,String key) {
         Object obj = data.get(key);
         if(obj == null)

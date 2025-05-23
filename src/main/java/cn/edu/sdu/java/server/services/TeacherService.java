@@ -176,100 +176,100 @@ public class TeacherService {
         }
     }
 
-        /**
-         * 获取一名老师的详细个人信息
-         * @param dataRequest { personId }
-         * @return dataResponse
-         */
-        public DataResponse getTeacherInfo (@Valid DataRequest dataRequest){
-            Integer personId = dataRequest.getInteger("personId");
-            DataResponse dataResponse = new DataResponse();
-            if (personId == null) {
-                dataResponse.setCode(1);
-                dataResponse.setMsg("用户ID为空");
-            } else {
-                Optional<Person> person = personRepository.findById(personId);
-                if (person.isPresent()) {
-                    Map<String, String> teacherMap = new HashMap<>();
-                    Map<String, String> personMap = new HashMap<>();
-                    //person
-                    Person personPojo = person.get();
-                    personMap.put("address", personPojo.getAddress());
-                    personMap.put("birthday", personPojo.getBirthday());
-                    personMap.put("card", personPojo.getCard());
-                    personMap.put("dept", personPojo.getDept());
-                    personMap.put("email", personPojo.getEmail());
-                    personMap.put("gender", personPojo.getGender());
-                    personMap.put("name", personPojo.getName());
-                    personMap.put("num", personPojo.getNum());
-                    personMap.put("type", personPojo.getType());
-                    personMap.put("phone", personPojo.getPhone());
-                    personMap.put("introduce", personPojo.getIntroduce());
-                    //teacher
-                    Teacher teacherPojo = teacherRepository.findByPersonId(personId);
-                    teacherMap.put("major", teacherPojo.getMajor());
-                    teacherMap.put("title", teacherPojo.getTitle());
-                    //to one map
-                    Map<String, String> map = new HashMap<>(teacherMap);
-                    map.putAll(personMap);
-                    dataResponse.setData(map);
-                    dataResponse.setMsg("success");
-                    dataResponse.setCode(0);
-                } else {
-                    dataResponse.setCode(1);
-                    dataResponse.setMsg("未查找到该用户");
-                }
-
-            }
-            return dataResponse;
-        }
-
-        /**
-         * 通过名字查找老师
-         * @param dataRequest { name }
-         * @return dataResponse
-         */
-        public DataResponse searchTeacherByName (@Valid DataRequest dataRequest){
-            String name = dataRequest.getString("name");
-            DataResponse dataResponse = new DataResponse();
-            if (name == null) {
-                dataResponse.setCode(1);
-                dataResponse.setMsg("名称为空!");
-            } else {
-                List<Teacher> teacherList = teacherRepository.findByTeacherName("%" + name + "%");
-                //get teacher map list
-                List<Map<String, String>> mapList = new ArrayList<>();
-                for (Teacher teacher : teacherList) {
-                    Person person = teacher.getPerson();
-                    //teacher
-                    Map<String, String> teacherMap = new HashMap<>();
-                    teacherMap.put("title", teacher.getTitle());
-                    teacherMap.put("major", teacher.getMajor());
-                    //person
-                    Map<String, String> personMap = new HashMap<>();
-                    personMap.put("address", person.getAddress());
-                    personMap.put("birthday", person.getBirthday());
-                    personMap.put("card", person.getCard());
-                    personMap.put("dept", person.getDept());
-                    personMap.put("email", person.getEmail());
-                    personMap.put("gender", person.getGender());
-                    personMap.put("name", person.getName());
-                    personMap.put("num", person.getNum());
-                    personMap.put("type", person.getType());
-                    personMap.put("phone", person.getPhone());
-                    personMap.put("introduce", person.getIntroduce());
-                    //to end map
-                    Map<String, String> map = new HashMap<>(teacherMap);
-                    map.putAll(personMap);
-                    //to list
-                    mapList.add(map);
-                }
-                dataResponse.setData(mapList);
-                dataResponse.setCode(0);
+    /**
+     * 获取一名老师的详细个人信息
+     * @param dataRequest { personId }
+     * @return dataResponse
+     */
+    public DataResponse getTeacherInfo (@Valid DataRequest dataRequest){
+        Integer personId = dataRequest.getInteger("personId");
+        DataResponse dataResponse = new DataResponse();
+        if (personId == null) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("用户ID为空");
+        } else {
+            Optional<Person> person = personRepository.findById(personId);
+            if (person.isPresent()) {
+                Map<String, String> teacherMap = new HashMap<>();
+                Map<String, String> personMap = new HashMap<>();
+                //person
+                Person personPojo = person.get();
+                personMap.put("address", personPojo.getAddress());
+                personMap.put("birthday", personPojo.getBirthday());
+                personMap.put("card", personPojo.getCard());
+                personMap.put("dept", personPojo.getDept());
+                personMap.put("email", personPojo.getEmail());
+                personMap.put("gender", personPojo.getGender());
+                personMap.put("name", personPojo.getName());
+                personMap.put("num", personPojo.getNum());
+                personMap.put("type", personPojo.getType());
+                personMap.put("phone", personPojo.getPhone());
+                personMap.put("introduce", personPojo.getIntroduce());
+                //teacher
+                Teacher teacherPojo = teacherRepository.findByPersonId(personId);
+                teacherMap.put("major", teacherPojo.getMajor());
+                teacherMap.put("title", teacherPojo.getTitle());
+                //to one map
+                Map<String, String> map = new HashMap<>(teacherMap);
+                map.putAll(personMap);
+                dataResponse.setData(map);
                 dataResponse.setMsg("success");
+                dataResponse.setCode(0);
+            } else {
+                dataResponse.setCode(1);
+                dataResponse.setMsg("未查找到该用户");
             }
-            return dataResponse;
+
         }
+        return dataResponse;
+    }
+
+    /**
+     * 通过名字查找老师
+     * @param dataRequest { name }
+     * @return dataResponse
+     */
+    public DataResponse searchTeacherByName (@Valid DataRequest dataRequest){
+        String name = dataRequest.getString("name");
+        DataResponse dataResponse = new DataResponse();
+        if (name == null) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("名称为空!");
+        } else {
+            List<Teacher> teacherList = teacherRepository.findByTeacherName("%" + name + "%");
+            //get teacher map list
+            List<Map<String, String>> mapList = new ArrayList<>();
+            for (Teacher teacher : teacherList) {
+                Person person = teacher.getPerson();
+                //teacher
+                Map<String, String> teacherMap = new HashMap<>();
+                teacherMap.put("title", teacher.getTitle());
+                teacherMap.put("major", teacher.getMajor());
+                //person
+                Map<String, String> personMap = new HashMap<>();
+                personMap.put("address", person.getAddress());
+                personMap.put("birthday", person.getBirthday());
+                personMap.put("card", person.getCard());
+                personMap.put("dept", person.getDept());
+                personMap.put("email", person.getEmail());
+                personMap.put("gender", person.getGender());
+                personMap.put("name", person.getName());
+                personMap.put("num", person.getNum());
+                personMap.put("type", person.getType());
+                personMap.put("phone", person.getPhone());
+                personMap.put("introduce", person.getIntroduce());
+                //to end map
+                Map<String, String> map = new HashMap<>(teacherMap);
+                map.putAll(personMap);
+                //to list
+                mapList.add(map);
+            }
+            dataResponse.setData(mapList);
+            dataResponse.setCode(0);
+            dataResponse.setMsg("success");
+        }
+        return dataResponse;
+    }
 
     /**
      * 添加老师

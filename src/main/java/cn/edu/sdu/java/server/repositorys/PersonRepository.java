@@ -11,5 +11,9 @@ import java.util.Optional;
  * Optional<Person> findByNum(String num);  根据num查询获得Option<Person>对象,  命名规范
  */
 public interface PersonRepository extends JpaRepository<Person, Integer> {
+    static Optional<Person> findById(Long personId) {
+        return PersonRepository.findById(personId);
+    }
+
     Optional<Person> findByNum(String num);
 }

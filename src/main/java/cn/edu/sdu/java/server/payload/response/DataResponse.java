@@ -20,6 +20,12 @@ public class DataResponse {
         this.msg = msg;
     }
 
+    public DataResponse(int i, String s) {
+        this.code = i;
+        this.data = s;
+        
+    }
+
     public Integer getCode() {
         return code;
     }

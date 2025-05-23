@@ -6,6 +6,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 /**
  * Student学生表实体类 保存每个学生的信息，
@@ -38,4 +42,7 @@ public class Student {
 
     @Size(max = 50)
     private String className;
+
+
+
 }
