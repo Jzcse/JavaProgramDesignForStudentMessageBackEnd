@@ -22,11 +22,11 @@ public class MenuInfo {
     private String userTypeIds;
     private Integer pid;
 
-    @Size(max = 40)
+    @Size(max = 50)
     private String name;
 
 
-    @Size(max = 40)
+    @Size(max = 50)
     private String title;
 
     public Integer getId() {
