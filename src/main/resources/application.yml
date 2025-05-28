@@ -5,7 +5,7 @@ security:
     expiration-time: 86400000
 server:
 #  端口
-  port: 22222
+  port: 22223
 spring:
   application:
     name: java-server
@@ -44,4 +44,5 @@ attach:
 logging:
   config: classpath:loggback.xml
 
-
+spring.jpa.show-sql: true
+spring.jpa.properties.hibernate.format_sql: true
