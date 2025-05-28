@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -66,56 +66,54 @@
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 		<dependency>
-			<!-- 一个 Maven 依赖配置，用于在项目中引入 MySQL 数据库的 JDBC 驱动。这个驱动允许 Java 应用程序通过 JDBC API 与 MySQL 数据库进行通信。 -->
+			<!-- MySQL 数据库驱动 -->
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<!-- 一个 Maven 依赖配置，用于在项目中引入 Lombok 库。Lombok 是一个 Java 库，它可以自动插入 getter 和 setter 方法、toString()、equals() 和 hashCode() 方法等，从而减少样板代码的编写。 -->
+			<!-- Lombok 减少样板代码 -->
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.18.36</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<!-- 用于简化单元测试和集成测试的设置 -->
+			<!-- 测试依赖 -->
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<!-- 用于简化安全相关的集成测试 -->
+			<!-- 安全测试依赖 -->
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<!-- Spring Data Relational 提供了对关系数据库访问的抽象，支持使用类似 Spring Data JPA 的编程模型来操作 SQL 数据库。 -->
+			<!-- Spring Data Relational -->
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-relational</artifactId>
 			<version>3.0.3</version>
 		</dependency>
 		<dependency>
-			<!-- 在项目中引入 JSON Web Token (JWT) 的处理库,用于生成和验证 JWT -->
+			<!-- JWT 处理库 -->
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>0.11.5</version>
 		</dependency>
 		<dependency>
-			<!-- 一个 Maven 依赖配置，用于在项目中引入 jjwt-impl 库，这是 JWT (JSON Web Token) 处理库 jjwt 的一个实现部分。jjwt-impl 提供了 JWT 库的实现细节，通常与 jjwt-api（API 部分）一起使用。 -->
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
 			<version>0.11.5</version>
 		</dependency>
 		<dependency>
-			<!-- 一个 Maven 依赖配置，用于在项目中引入 jjwt-jackson 库。这个库是 jjwt（JSON Web Token）项目的一部分，专门用于处理 JWT 中的 JSON 序列化和反序列化。jjwt-jackson 依赖于 Jackson 库来执行这些操作。 -->
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
 			<version>0.11.5</version>
 		</dependency>
 		<dependency>
-			<!-- 一个 Maven 依赖配置，用于在项目中引入 Apache POI 的 poi-ooxml 库。Apache POI 是一个流行的 Java 库，用于处理 Microsoft Office 格式的文件，特别是 Excel 文件（包括旧的 .xls 格式和新的 .xlsx 格式）。poi-ooxml 模块特别关注对 OpenXML 格式（即 .xlsx 文件）的支持 -->
+			<!-- Apache POI 处理 Excel 文件 -->
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>5.2.2</version>
@@ -124,6 +122,21 @@
 			<groupId>cn.hutool</groupId>
 			<artifactId>hutool-all</artifactId>
 			<version>5.8.25</version>
+		</dependency>
+
+		<!-- 新增：OpenPDF 依赖（用于生成 PDF） -->
+		<dependency>
+			<groupId>com.github.librepdf</groupId>
+			<artifactId>openpdf</artifactId>
+			<version>1.3.42</version>
+		</dependency>
+
+		<!-- 新增：Servlet API 依赖（用于处理 HTTP 响应） -->
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -159,9 +172,4 @@
 			</releases>
 		</pluginRepository>
 	</pluginRepositories>
-
-
-
 </project>
-
-

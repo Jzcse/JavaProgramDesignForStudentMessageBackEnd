@@ -3,10 +3,14 @@ package cn.edu.sdu.java.server.controllers;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.services.TeacherService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.Map;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -72,5 +76,11 @@ public class TeacherController {
         Integer integer = 1;
         dataResponse.setData(integer);
         return dataResponse;
+    }
+    @PostMapping("/export/pdf")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void exportToPdf(@RequestBody(required = false) Map<String, Object> params,
+                            HttpServletResponse response) throws IOException {
+        teacherService.exportTeachersToPdf(response);
     }
 }

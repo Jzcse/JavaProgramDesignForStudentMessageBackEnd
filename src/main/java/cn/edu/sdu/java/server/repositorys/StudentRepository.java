@@ -35,11 +35,12 @@ public interface StudentRepository extends JpaRepository<Student,Integer> {
     Page<Student> findStudentPageByNumName(String numName,  Pageable pageable);
 
     //这里是超超新写的，还未测
-    @Query("select student from Student student where student.person.id = :personId")
+    @Query("select student from Student student where student.person.personId = :personId")
     Student findStudentByPersonId(@Param("personId") String personId);
 
     @Query("select student from Student student where student.person.num = :num")
     Student findStudentByPersonNum(@Param("num") String num);
 
+    @Query("select student from Student student where student.person.num = :num")
     Optional<Student> findStudentByNum(String num);
 }
