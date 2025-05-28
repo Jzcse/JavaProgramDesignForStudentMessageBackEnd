@@ -376,4 +376,34 @@ public class CourseService {
 
         return CommonMethod.getReturnData(result);
     }
+
+    public DataResponse importCourses(@Valid DataRequest dataRequest) {
+        List<Map<String, Object>> courses = (List<Map<String, Object>>) dataRequest.getList("courseList");
+        for (Map<String, Object> courseData : courses) {
+            String num = CommonMethod.getString(courseData,"num");
+            String name = CommonMethod.getString(courseData,"name");
+            String coursePath = CommonMethod.getString(courseData,"coursePath");
+            Integer credit = CommonMethod.getInteger(courseData,"credit");
+            String classroom = CommonMethod.getString(courseData,"classroom");
+            String dayOfWeek = CommonMethod.getString(courseData,"dayOfWeek");
+            String time = CommonMethod.getString(courseData,"time");
+            String preCourseName = CommonMethod.getString(courseData,"preCourseName");
+            if (preCourseName != null && preCourseName.equals(name)) {
+                return CommonMethod.getReturnMessageError("先修课程不能是当前课程");
+            }
+            Course course = new Course();
+            Course preCourse = preCourseName != null ?courseRepository.findByName(preCourseName).orElseThrow(() -> new RuntimeException("未找到先修课程")) : null;
+
+            course.setNum(num);
+            course.setName(name);
+            course.setCoursePath(coursePath);
+            course.setCredit(credit);
+            course.setClassroom(classroom);
+            course.setDayOfWeek(dayOfWeek);
+            course.setTime(time);
+            course.setPreCourse(preCourse);
+            courseRepository.save(course);
+        }
+        return CommonMethod.getReturnMessageOK();
+    }
 }
