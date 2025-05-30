@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
  * Course 课程表实体类  保存课程的的基本信息信息，
@@ -46,4 +49,11 @@ public class Course  {
     @Column(name = "time")
     private String time;
 
+    @ManyToMany
+    @JoinTable(
+        name = "course_selection",
+        joinColumns = @JoinColumn(name = "course_id"),
+        inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
+    private Set<Student> students = new HashSet<>();
 }

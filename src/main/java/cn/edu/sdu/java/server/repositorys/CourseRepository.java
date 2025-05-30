@@ -1,6 +1,8 @@
 package cn.edu.sdu.java.server.repositorys;
 
 import cn.edu.sdu.java.server.models.Course;
+import cn.edu.sdu.java.server.models.Student;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,6 +19,9 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
     @Query(value = "from Course where ?1='' or num like %?1% or name like %?1% ")
     List<Course> findCourseListByNumName(String numName);
 
+    @Query("from Course where courseId =?1")
+    Optional<Course> findByCourseId(Integer courseId);
+
     Optional<Course> findByNum(String num);
     Optional<Course> findByName(String name);
 
@@ -27,4 +32,10 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
 
     @Query(value = "from Course where ?1='' or num like %?1% or name like %?2% ")
     Optional<Course> findByNumAndName(String num, String name);
+
+    @Query("SELECT DISTINCT c FROM Course c JOIN c.students s WHERE s.id = :studentId AND c.dayOfWeek = :dayOfWeek")
+    List<Course> findByStudentAndDayOfWeek(@Param("studentId") Integer studentId, @Param("dayOfWeek") String dayOfWeek);
+
+    @Query("SELECT DISTINCT c FROM Course c JOIN c.students s WHERE s.id = :studentId")
+    List<Course> findCourseByStudent(@Param("studentId")Integer studentId);
 }

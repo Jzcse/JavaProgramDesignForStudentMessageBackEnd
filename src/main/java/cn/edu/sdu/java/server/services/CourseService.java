@@ -1,30 +1,43 @@
 package cn.edu.sdu.java.server.services;
 
-import cn.edu.sdu.java.server.models.Course;
-import cn.edu.sdu.java.server.models.Teacher;
+import cn.edu.sdu.java.server.models.*;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
-import cn.edu.sdu.java.server.repositorys.CourseRepository;
-import cn.edu.sdu.java.server.repositorys.PersonRepository;
+import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.Valid;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 
 import java.util.*;
+
+
 
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
-
-    //    private final PersonRepository personRepository; // 暂时没用到
-    public CourseService(CourseRepository courseRepository, PersonRepository personRepository) {
+    private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final CourseChooseRepository courseChooseRepository; // 暂时没用到
+    public CourseService(CourseRepository courseRepository, StudentRepository studentRepository, UserRepository userRepository, CourseChooseRepository courseChooseRepository) {
         this.courseRepository = courseRepository;
-//        this.personRepository = personRepository;
+        this.studentRepository = studentRepository;
+        this.userRepository = userRepository;
+        this.courseChooseRepository = courseChooseRepository;
     }
 
     @Autowired
@@ -187,159 +200,6 @@ public class CourseService {
         courseRepository.delete(course);
         return CommonMethod.getReturnMessageOK();
     }
-    /*
-    /添加课程关系：
-    * @param dataRequest = {num,relatedNum,relationType}课程信息
-    * return DataResponse
-     */
-    @Transactional
-    public DataResponse addCourseRelation(DataRequest dataRequest) {
-        Map<String, Object> courseRelationMap = dataRequest.getMap("courseRelation");
-        String num = CommonMethod.getString(courseRelationMap,"num");
-        String relatedNum = CommonMethod.getString(courseRelationMap,"relatedNum");
-        String relationType = CommonMethod.getString(courseRelationMap,"relationType"); // 先修课程和互斥课程
-
-        if (num == null || relatedNum == null || relationType == null) {
-            return CommonMethod.getReturnMessageError("参数不能为空");
-        }
-
-        Course course = courseRepository.findByNum(num)
-                .orElseThrow(() -> new RuntimeException("未找到主课程"));
-        Course relatedCourse = courseRepository.findByNum(relatedNum)
-                .orElseThrow(() -> new RuntimeException("未找到关联课程"));
-
-        switch (relationType) {
-            case "PRE":
-                course.setPreCourse(relatedCourse);
-                break;
-            case "EXCLUSIVE":
-                // 处理互斥关系，现在还未建立互斥课程的对象，暂时注释掉
-                //
-                break;
-            default:
-                return CommonMethod.getReturnMessageError("无效的关系类型");
-        }
-
-        entityManager.merge(course);
-        return CommonMethod.getReturnMessageOK();
-    }
-
-    /*
-     * 这个地方是删除课程关系的，暂时没用到，如果要有选择的删除，建议先把对应关系建立起来
-     * @param dataRequest = {num,relatedNum,relationType}课程信息
-     * return DataResponse
-     *
-     * */
-    @Transactional
-    public DataResponse removeCourseRelation(DataRequest dataRequest) {
-        Map<String, Object> courseRelationMap = dataRequest.getMap("courseRelation");
-        String num = CommonMethod.getString(courseRelationMap,"num");
-        String relatedNum = CommonMethod.getString(courseRelationMap,"relatedNum");
-        String relationType = CommonMethod.getString(courseRelationMap,"relationType"); // 先修课程和互斥课程
-
-        if (num == null || relatedNum == null || relationType == null) {
-            return CommonMethod.getReturnMessageError("参数不能为空");
-        }
-
-        Course course = courseRepository.findByNum(num)
-                .orElseThrow(() -> new RuntimeException("未找到主课程"));
-
-        switch (relationType) {
-            case "PRE":
-                course.setPreCourse(null);
-                break;
-            case "EXCLUSIVE":
-                // 删除互斥关系
-                // courseExclusionRepository.deleteByCourseAndRelatedCourse(course, relatedCourse);
-                break;
-            default:
-                return CommonMethod.getReturnMessageError("无效的关系类型");
-        }
-
-        entityManager.merge(course);
-        return CommonMethod.getReturnMessageOK();
-    }
-
-    /*
-     * 获取课程关系：
-     * @param dataRequest = {num}课程编号
-     * return DataResponse = {preCourse,exclusiveCourses}课程关系
-     *
-     * */
-    public DataResponse getCourseRelations(DataRequest dataRequest) {
-        Map<String, Object> courseRelationMap = dataRequest.getMap("courseRelation");
-        String num = CommonMethod.getString(courseRelationMap,"num");
-        if (num == null) {
-            return CommonMethod.getReturnMessageError("课程编号不能为空");
-        }
-
-        Course course = courseRepository.findByNum(num)
-                .orElseThrow(() -> new RuntimeException("未找到该课程"));
-
-        Map<String, Object> result = new HashMap<>();
-
-        // 获取先修课程
-        if (course.getPreCourse() != null) {
-            result.put("preCourse", course.getPreCourse().getName());
-        }
-
-        // 获取互斥课程
-        //if()
-        // 暂时不写
-        // List<Course> exclusiveCourses = courseExclusionRepository.findExclusiveCourses(course);
-        // result.put("exclusiveCourses", exclusiveCourses);
-
-        return CommonMethod.getReturnData(result);
-    }
-    /*
-    /课程与教室，时间安排：
-    * @param dataRequest = {num,classroom,dayOfWeek,startTime,endTime}课程信息
-    * return DataResponse
-     */
-    @Transactional
-    public DataResponse scheduleCourse(DataRequest dataRequest) {
-        Map<String, Object> courseScheduleMap = dataRequest.getMap("courseSchedule");
-        String num = CommonMethod.getString(courseScheduleMap,"num");
-        String classroom = CommonMethod.getString(courseScheduleMap,"classroom");
-        String dayOfWeek = CommonMethod.getString(courseScheduleMap,"dayOfWeek");
-        String time = CommonMethod.getString(courseScheduleMap,"time");
-
-        if (num == null || classroom == null || dayOfWeek == null || time == null ) {
-            return CommonMethod.getReturnMessageError("参数不能为空");
-        }
-
-        Course course = courseRepository.findByNum(num).orElseThrow(() -> new RuntimeException("未找到该课程"));
-        // 检查教室和时间是否冲突
-        // 设置课程安排
-        course.setClassroom(classroom);
-        course.setDayOfWeek(dayOfWeek);
-        course.setTime(time);
-
-        entityManager.merge(course);
-        return CommonMethod.getReturnMessageOK();
-    }
-
-    /*
-    /获取课程与教室、时间安排：
-    * @param dataRequest = {num}课程编号
-    * return DataResponse = {classroom,dayOfWeek,startTime,endTime}课程安排
-     */
-    public DataResponse getCourseSchedule(DataRequest dataRequest) {
-        Map<String, Object> courseScheduleMap = dataRequest.getMap("courseSchedule");
-        String num = CommonMethod.getString(courseScheduleMap,"num");
-        if (num == null || num.isEmpty()) {
-            return CommonMethod.getReturnMessageError("课程编号不能为空");
-        }
-
-        Course course = courseRepository.findByNum(num).orElseThrow(() -> new RuntimeException("未找到该课程"));
-
-        Map<String, Object> schedule = new HashMap<>();
-        schedule.put("classroom", course.getClassroom());
-        schedule.put("dayOfWeek", course.getDayOfWeek());
-        schedule.put("time", course.getTime());
-
-        return CommonMethod.getReturnData(schedule);
-    }
     public DataResponse getCourseId(DataRequest dataRequest) {
         Map<String, Object> courseMap = dataRequest.getMap("course");
         String num = CommonMethod.getString(courseMap,"num");
@@ -352,7 +212,7 @@ public class CourseService {
         }
         Course course = courseRepository.findByNumAndName(num, name).orElseThrow(() -> new RuntimeException("未找到该课程"));
         Map<String, Object> result = new HashMap<>();
-        result.put("courseId", course.getCourseId());
+        result.put("courseId", course.getCourseId().toString());
         return CommonMethod.getReturnData(result);
     }
 
@@ -405,5 +265,209 @@ public class CourseService {
             courseRepository.save(course);
         }
         return CommonMethod.getReturnMessageOK();
+}
+
+
+// 然后在CourseService中实现选课方法：
+
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public DataResponse selectCourse(DataRequest dataRequest) {
+        Map<String, Object> selectionMap = (Map<String, Object>) dataRequest.getMap("selection");
+        String courseId1 = CommonMethod.getString(selectionMap, "courseId");
+        String studentId1 = CommonMethod.getString(selectionMap, "studentId");
+        Integer courseId = Integer.parseInt(courseId1);
+        Integer studentId = Integer.parseInt(studentId1);
+
+        Course course = courseRepository.findByCourseId(courseId).orElseThrow(() -> new RuntimeException("课程不存在"));
+        Student student = studentRepository.findByStudentId(studentId).orElseThrow(() -> new RuntimeException("学生不存在"));
+        CourseChoose courseChoose = courseChooseRepository.findByStudentCourse(studentId, courseId);
+        if (courseChoose != null) {
+            return CommonMethod.getReturnMessageError("已选过该课程");
+        }
+        courseChoose = new CourseChoose();
+        courseChoose.setCourse(course);
+        courseChoose.setStudent(student);
+        courseChooseRepository.save(courseChoose);
+        return CommonMethod.getReturnMessageOK();
+    }
+//        try {
+//            Map<String, Object> selectionMap = (Map<String, Object>) dataRequest.getMap("selection");
+//            String courseId1 = CommonMethod.getString(selectionMap, "courseId");
+//            String studentId1 = CommonMethod.getString(selectionMap, "studentId");
+//            Integer courseId = Integer.parseInt(courseId1);
+//            Integer studentId = Integer.parseInt(studentId1);
+//            System.out.println("11111111111111111111111111111111111");
+//
+//            Course course = courseRepository.findByCourseId(courseId).orElseThrow(() -> new RuntimeException("课程不存在"));
+//            System.out.println("222222222222222222222222222222222");
+//            Student student = studentRepository.findByStudentId(studentId).orElseThrow(() -> new RuntimeException("学生不存在"));
+//            System.out.println("333333333333333333333333333");
+//
+//            Set<Student> students = new HashSet<>(course.getStudents());
+//            if (students.contains(student)) {
+//                return CommonMethod.getReturnMessageError("已选过该课程");
+//            }
+//
+//            System.out.println("44444444444444444444444444444");
+//            List<Course> originalCourses = courseRepository.findCourseByStudent(studentId);
+//            for (Course originalCourse : originalCourses) {
+//                if (originalCourse.getDayOfWeek().equals(course.getDayOfWeek()) && originalCourse.getTime().equals(course.getTime())) {
+//                    return CommonMethod.getReturnMessageError("与已选课程时间冲突");
+//                }
+//            }
+//
+//            System.out.println("55555555555555555555555555");
+//            System.out.println("课程学生数量: " + course.getStudents().size());
+//
+//            System.out.println("66666666666666666666666666666666");
+//            students.add(student);
+//            System.out.println("7777777777777777777777777777777");
+//            course.setStudents(students);
+//
+//            System.out.println("8888888888888888888888888888");
+//            courseRepository.save(course);
+//            System.out.println("999999999999999999999999999999999999");
+//            return CommonMethod.getReturnMessageOK();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return CommonMethod.getReturnMessageError("选课失败");
+//        }
+//
+//    }
+
+@Transactional
+public DataResponse dropCourse(DataRequest dataRequest) {
+    Map<String, Object> selectionMap = (Map<String, Object>) dataRequest.getMap("selection");
+    String courseId1 = CommonMethod.getString(selectionMap, "courseId");
+    String studentId1 = CommonMethod.getString(selectionMap, "studentId");
+    Integer courseId = Integer.parseInt(courseId1);
+    Integer studentId = Integer.parseInt(studentId1);
+    Course course = courseRepository.findByCourseId(courseId).orElseThrow(() -> new RuntimeException("课程不存在"));
+    Student student = studentRepository.findByStudentId(studentId).orElseThrow(() -> new RuntimeException("学生不存在"));
+    CourseChoose courseChoose = courseChooseRepository.findByStudentCourse(studentId, courseId);
+    if (courseChoose == null) {
+        return CommonMethod.getReturnMessageError("未选过该课程");
+    }
+    courseChooseRepository.delete(courseChoose);
+    return CommonMethod.getReturnMessageOK();
+//    Map<String, Object> selectionMap = (Map<String, Object>)dataRequest.getMap("selection");
+//    String courseId1 = CommonMethod.getString(selectionMap, "courseId");
+//    String studentId1 = CommonMethod.getString(selectionMap, "studentId");
+//    Integer courseId = Integer.parseInt(courseId1);
+//    Integer studentId = Integer.parseInt(studentId1);
+//
+//
+//    Course course = courseRepository.findByCourseId(courseId).orElseThrow(() -> new RuntimeException("课程不存在"));
+//    Student student = studentRepository.findByStudentId(studentId).orElseThrow(() -> new RuntimeException("学生不存在"));
+//
+//    if (!course.getStudents().contains(student)) {
+//        return CommonMethod.getReturnMessageError("未选过该课程");
+//    }
+//
+//    course.getStudents().remove(student);
+//    courseRepository.save(course);
+//    return CommonMethod.getReturnMessageOK();
+    }
+    public DataResponse getStudentCourseList(@Valid DataRequest dataRequest) {
+        Map<String, Object> selectionMap = dataRequest.getMap("selection");
+        String studentId1 = CommonMethod.getString(selectionMap, "studentId");
+        Integer studentId = Integer.parseInt(studentId1);
+
+
+        List<String> weekDays = Arrays.asList("星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日");
+        Map<String, List<Map<String, String>>> result = new HashMap<>();
+
+        for (String day : weekDays) {
+            List<Map<String, String>> dayCourses = new ArrayList<>();
+
+            for (Course course : courseChooseRepository.findByStudentAndDayOfWeek(studentId, day)) {
+                Map<String, String> courseInfo = new HashMap<>();
+                courseInfo.put("name", course.getName());
+                courseInfo.put("time", course.getTime());
+                dayCourses.add(courseInfo);
+            }
+
+            result.put(day, dayCourses);
+        }
+
+        return CommonMethod.getReturnData(result);
+    }
+
+    public DataResponse creditsCount(@Valid DataRequest dataRequest) {
+        Map<String, Object> selectionMap = dataRequest.getMap("selection");
+        String studentId1 = CommonMethod.getString(selectionMap, "studentId");
+        Integer studentId = Integer.parseInt(studentId1);
+        List<Course> courses = courseChooseRepository.findCourseByStudent(studentId);
+        int totalCredits = 0;
+        for (Course course : courses) {
+            totalCredits += course.getCredit();
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalCredits", totalCredits);
+        return CommonMethod.getReturnData(result);
+    }
+
+    public DataResponse getStudentCourseListResult(@Valid DataRequest dataRequest) {
+        Map<String, Object> selectionMap = dataRequest.getMap("selection");
+        String studentId1 = CommonMethod.getString(selectionMap, "studentId");
+        Integer studentId = Integer.parseInt(studentId1);
+
+        List<Course> courses = courseChooseRepository.findCourseByStudent(studentId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Course course : courses) {
+            Map<String, Object> courseInfo = new HashMap<>();
+            courseInfo.put("courseId", course.getCourseId().toString());
+            courseInfo.put("num", course.getNum().toString());
+            courseInfo.put("name", course.getName());
+            courseInfo.put("time", course.getTime());
+            courseInfo.put("credit", course.getCredit());
+            courseInfo.put("preCourseName", course.getPreCourse() != null ?course.getPreCourse().getName() : "");
+            courseInfo.put("classroom", course.getClassroom());
+            courseInfo.put("dayOfWeek", course.getDayOfWeek());
+            result.add(courseInfo);
+        }
+        return CommonMethod.getReturnData(result);
+    }
+
+    public DataResponse getSingleCourse(@Valid DataRequest dataRequest) {
+        Map<String, Object> courseMap = dataRequest.getMap("course");
+        String  courseId1 = CommonMethod.getString(courseMap,"courseId");
+        Integer courseId = Integer.parseInt(courseId1);
+
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("课程不存在"));
+        Map<String, Object> result = new HashMap<>();
+        result.put("name", course.getName());
+        result.put("num", course.getNum().toString());
+        result.put("coursePath", course.getCoursePath());
+        result.put("credit", course.getCredit());
+        result.put("classroom", course.getClassroom());
+        result.put("dayOfWeek", course.getDayOfWeek());
+        result.put("time", course.getTime());
+        result.put("preCourseName", course.getPreCourse() != null ?course.getPreCourse().getName() : "");
+        return CommonMethod.getReturnData(result);
+    }
+
+    public DataResponse getRoleId(DataRequest dataRequest) {
+        // 获取当前用户角色
+        Map<String, Object> courseMap = dataRequest.getMap("course");
+        String num1 = CommonMethod.getString(courseMap,"num");
+        if (num1 == null) {
+            return CommonMethod.getReturnMessageError("学号不能为空");
+        }
+        User user = (User) userRepository.findByNum(num1);
+        System.err.println(user.getUserType());
+        Map<String, Object> result = new HashMap<>();
+        if(user.getUserType().getName() == EUserType.ROLE_STUDENT){
+            Student student = studentRepository.findByNum(num1);
+            String studentId = student.getStudentId().toString();
+            String personId = student.getPerson().getPersonId().toString();
+            result.put("personId", personId);
+            result.put("studentId", studentId);
+        }
+        else if(user.getUserType().equals("ROLE_TEACHER")) {
+            //ToDo
+        }
+        return CommonMethod.getReturnData(result);
     }
 }

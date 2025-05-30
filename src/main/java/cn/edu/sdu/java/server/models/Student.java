@@ -6,9 +6,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -43,6 +42,10 @@ public class Student {
     @Size(max = 50)
     private String className;
 
-
-
+    @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
+    private Set<Course> courses = new HashSet<>();
+    public void addCourse(Course course) {
+        courses.add(course);
+        course.getStudents().add(this);
+    }
 }

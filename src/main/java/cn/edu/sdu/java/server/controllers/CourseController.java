@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 public class CourseController {
     private final CourseService courseService;
+
     public CourseController(CourseService courseService) {
         this.courseService = courseService;
     }
+
     @PostMapping("/getCourseList")
     public DataResponse getCourseList(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getCourseList(dataRequest);
@@ -26,47 +28,61 @@ public class CourseController {
     public DataResponse getCourseId(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getCourseId(dataRequest);
     }
+
     @PostMapping("/courseAdd")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse courseAdd(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.courseAdd(dataRequest);
     }
+
     @PostMapping("/courseDelete")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse courseDelete(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.courseDelete(dataRequest);
     }
+
     @PostMapping("/courseUpdate")
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse courseUpdate(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.courseUpdate(dataRequest);
     }
-    @PostMapping("/addCourseRelation")
-    @PreAuthorize("hasRole('ADMIN')")
-    public DataResponse addCourseRelation(@Valid @RequestBody DataRequest dataRequest) {
-        return courseService.addCourseRelation(dataRequest);
-    }
-    @PostMapping("/deleteCourseRelation")
-    @PreAuthorize("hasRole('ADMIN')")
-    public DataResponse removeCourseRelation(@Valid @RequestBody DataRequest dataRequest) {
-        return courseService.removeCourseRelation(dataRequest);
-    }
-    @PostMapping("/getCourseRelations")
-    public DataResponse getCourseRelations(@Valid @RequestBody DataRequest dataRequest) {
-        return courseService.getCourseRelations(dataRequest);
-    }
-    @PostMapping("/scheduleCourse")
 
-    public DataResponse scheduleCourse(@Valid @RequestBody DataRequest dataRequest) {
-        return courseService.scheduleCourse(dataRequest);
+    @PostMapping("/importCourses")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse importCourses(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.importCourses(dataRequest);
     }
-    @PostMapping("/getCourseSchedule")
-    public DataResponse getCourseSchedule(@Valid @RequestBody DataRequest dataRequest) {
-        return courseService.getCourseSchedule(dataRequest);
-    }
-    @PostMapping ("/getWeekDaysList")
+    @PostMapping("/getWeekDaysList")
     public DataResponse getWeekDaysList(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getWeekDaysList(dataRequest);
     }
-
+    @PostMapping("/selectCourse")
+    public DataResponse selectCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.selectCourse(dataRequest);
+    }
+    @PostMapping("/dropCourse")
+    public DataResponse dropCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.dropCourse(dataRequest);
+    }
+    @PostMapping("/getStudentCourseList")
+    public DataResponse getStudentCourseList(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getStudentCourseList(dataRequest);
+    }
+    @PostMapping("/creditsCount")
+    public DataResponse creditsCount(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.creditsCount(dataRequest);
+    }
+    @PostMapping("/getStudentCourseListResult")
+    public DataResponse getStudentCourseListResult(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getStudentCourseListResult(dataRequest);
+    }
+    @PostMapping("/getSingleCourse")
+    public DataResponse getSingleCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getSingleCourse(dataRequest);
+    }
+    @PostMapping("/getRoleId")
+    @PreAuthorize("hasRole('STUDENT'，'TEACHER')")
+    public DataResponse getRoleId(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getRoleId(dataRequest);
+    }
 }

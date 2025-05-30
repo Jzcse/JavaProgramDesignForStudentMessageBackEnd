@@ -4,6 +4,7 @@ package cn.edu.sdu.java.server.repositorys;
 import cn.edu.sdu.java.server.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,6 +21,9 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+
+    @Query("SELECT user FROM User user WHERE user.person.num = :num1")
+    User findByNum(@Param("num1") String num1);
 
     @Query(value = "SELECT user FROM User user WHERE user.person.personId = :personId")
     User findByPersonId(Integer personId);
