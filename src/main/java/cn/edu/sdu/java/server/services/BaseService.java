@@ -1,18 +1,12 @@
 package cn.edu.sdu.java.server.services;
 
-import cn.edu.sdu.java.server.models.DictionaryInfo;
-import cn.edu.sdu.java.server.models.MenuInfo;
-import cn.edu.sdu.java.server.models.User;
-import cn.edu.sdu.java.server.models.UserType;
+import cn.edu.sdu.java.server.models.*;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.payload.response.MyTreeNode;
 import cn.edu.sdu.java.server.payload.response.OptionItem;
 import cn.edu.sdu.java.server.payload.response.OptionItemList;
-import cn.edu.sdu.java.server.repositorys.DictionaryInfoRepository;
-import cn.edu.sdu.java.server.repositorys.MenuInfoRepository;
-import cn.edu.sdu.java.server.repositorys.UserRepository;
-import cn.edu.sdu.java.server.repositorys.UserTypeRepository;
+import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.ComDataUtil;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,15 +37,24 @@ public class BaseService {
     private final UserRepository userRepository;  //用户数据操作自动注入
     private final MenuInfoRepository menuInfoRepository; //菜单数据操作自动注入
     private final DictionaryInfoRepository dictionaryInfoRepository;  //数据字典数据操作自动注入
-    private final UserTypeRepository userTypeRepository;   //用户类型数据操作自动注入
+    private final UserTypeRepository userTypeRepository;
+    //用户类型数据操作自动注入
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
+    private  final PersonRepository personRepository;
 
-    public BaseService(ResourceLoader resourceLoader,PasswordEncoder encoder, UserRepository userRepository, MenuInfoRepository menuInfoRepository, DictionaryInfoRepository dictionaryInfoRepository, UserTypeRepository userTypeRepository) {
+
+    public BaseService(PersonRepository personRepository,StudentRepository studentRepository, TeacherRepository teacherRepository,ResourceLoader resourceLoader,PasswordEncoder encoder, UserRepository userRepository, MenuInfoRepository menuInfoRepository, DictionaryInfoRepository dictionaryInfoRepository, UserTypeRepository userTypeRepository) {
         this.resourceLoader = resourceLoader;
         this.encoder = encoder;
         this.userRepository = userRepository;
         this.menuInfoRepository = menuInfoRepository;
         this.dictionaryInfoRepository = dictionaryInfoRepository;
         this.userTypeRepository = userTypeRepository;
+        this.studentRepository = studentRepository;
+        this.teacherRepository = teacherRepository;
+        this.personRepository = personRepository;
+
     }
 
     /**
@@ -93,7 +96,7 @@ public class BaseService {
 
     /**
      * MyTreeNode getMenuTreeNode(Integer userTypeId) 获得角色的菜单树根节点
-     * @param userTypeId 用户类型ID
+     * @param  //userTypeId 用户类型ID
      * @return MyTreeNode 根节点对象
      */
     public List<MyTreeNode> getMenuTreeNodeList() {
@@ -387,6 +390,33 @@ public class BaseService {
 
         }
         return CommonMethod.getReturnMessageOK();
+    }
+
+    public DataResponse getRoleId(DataRequest dataRequest) {
+        // 获取当前用户角色
+        Map<String, Object> courseMap = dataRequest.getMap("role");
+        String num1 = CommonMethod.getString(courseMap,"num");
+        if (num1 == null) {
+            return CommonMethod.getReturnMessageError("学号不能为空");
+        }
+        User user = (User) userRepository.findByNum(num1);
+        System.err.println(user.getUserType());
+        Map<String, Object> role = new HashMap<>();
+        if(user.getUserType().getName() == EUserType.ROLE_STUDENT){
+            Student student = studentRepository.findByNum(num1);
+            String studentId = student.getStudentId().toString();
+            String personId = student.getPerson().getPersonId().toString();
+            role.put("identify", "2");
+            role.put("studentId", studentId);
+        }
+        else if(user.getUserType().getName() == EUserType.ROLE_TEACHER) {
+            Teacher teacher = teacherRepository.findByNum(num1);
+            String teacherId = teacher.getPersonId().toString();
+            String personId = teacher.getPerson().getPersonId().toString();
+            role.put("identify", "1");
+            role.put("teacherId", teacherId);
+        }
+        return CommonMethod.getReturnData(role);
     }
 
 }

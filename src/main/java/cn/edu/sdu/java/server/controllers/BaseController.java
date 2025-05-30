@@ -48,6 +48,11 @@ public class BaseController {
      *
      * @return
      */
+    @PostMapping("/getRoleId")
+    @PreAuthorize("hasRole('STUDENT'，'TEACHER')")
+    public DataResponse getRoleId(@Valid @RequestBody DataRequest dataRequest) {
+        return baseService.getRoleId(dataRequest);
+    }
 
     @PostMapping("/getMenuList")
     public DataResponse getMenuList(@Valid @RequestBody DataRequest dataRequest) {

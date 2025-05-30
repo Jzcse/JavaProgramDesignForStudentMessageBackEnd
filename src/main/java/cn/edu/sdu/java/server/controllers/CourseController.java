@@ -80,9 +80,4 @@ public class CourseController {
     public DataResponse getSingleCourse(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getSingleCourse(dataRequest);
     }
-    @PostMapping("/getRoleId")
-    @PreAuthorize("hasRole('STUDENT'，'TEACHER')")
-    public DataResponse getRoleId(@Valid @RequestBody DataRequest dataRequest) {
-        return courseService.getRoleId(dataRequest);
-    }
 }

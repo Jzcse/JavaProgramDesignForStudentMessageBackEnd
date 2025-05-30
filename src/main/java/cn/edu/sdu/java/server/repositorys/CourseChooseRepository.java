@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface CourseChooseRepository extends JpaRepository<CourseChoose,Integer> {
-    @Query(value="from Score where (student.person.id=?1) and (course.courseId=?2)" )
+    @Query(value="from CourseChoose where (student.studentId=?1) and (course.courseId=?2)" )
     CourseChoose findByStudentCourse(Integer studentId, Integer courseId);
 
     @Query("SELECT DISTINCT cc.course FROM CourseChoose cc " +
