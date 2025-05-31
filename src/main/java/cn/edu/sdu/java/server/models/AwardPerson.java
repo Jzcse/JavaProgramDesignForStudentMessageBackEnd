@@ -35,6 +35,9 @@ public class AwardPerson {
     @Column(name = "student_dept")
     private String studentDept;
 
+    @Column(name = "related_student_id")
+    private Integer relatedStudentId;
+
     @ManyToOne
     @JoinColumn(name = "award_id")
     private Award award;

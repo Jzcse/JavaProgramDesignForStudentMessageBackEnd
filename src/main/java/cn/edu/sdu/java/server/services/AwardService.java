@@ -217,6 +217,9 @@ public class AwardService {
             dataResponse.setMsg("学生信息不能为空");
             return dataResponse;
         }
+
+        //---------------------------------------------------------//
+        studentMap.put("relatedStudentId", studentSave.getStudentId());
         studentMap.put("gender", studentSave.getPerson().getGender());
         studentMap.put("phone", studentSave.getPerson().getPhone());
         studentMap.put("major", studentSave.getMajor());
@@ -229,6 +232,7 @@ public class AwardService {
         awardPerson.setStudentPhone(CommonMethod.getString(studentMap, "phone"));
         awardPerson.setStudentName(CommonMethod.getString(studentMap, "name"));
         awardPerson.setStudentEmail(CommonMethod.getString(studentMap, "email"));
+        awardPerson.setRelatedStudentId(CommonMethod.getInteger(studentMap, "relatedStudentId"));
         awardPerson.setAward(awardSave);
 
         try {
@@ -237,6 +241,7 @@ public class AwardService {
             awardRepository.save(awardSave);
             dataResponse.setCode(0);
             dataResponse.setMsg("添加获奖学生成功");
+            dataResponse.setData(studentMap);
         }
         catch (Exception e) {
             dataResponse.setCode(1);
@@ -310,6 +315,57 @@ public class AwardService {
         map.put("gander", awardPerson.getStudentGander());
         map.put("phone", awardPerson.getStudentPhone());
         map.put("email", awardPerson.getStudentEmail());
+        map.put("relatedStudentId", awardPerson.getRelatedStudentId().toString());
         return map;
     }
+
+    public DataResponse getRelatedStudentForPdf(@Valid DataRequest datarequest){
+        DataResponse dataResponse = new DataResponse();
+        Integer numName = datarequest.getInteger("numName");
+        Integer relatedStudentId;
+        //这里是为了通过学号获取studentId
+        List<Student> targetStudent = studentRepository.findStudentListByNumName(numName.toString());
+        if(targetStudent.isEmpty()){
+            dataResponse.setCode(1);
+            dataResponse.setMsg("该学生不存在");
+            return dataResponse;
+        }else{
+            relatedStudentId = targetStudent.get(0).getStudentId();
+        }
+
+        List<AwardPerson> relatedStudent = awardPersonRepository.findByRelatedStudentId(relatedStudentId);
+        if (relatedStudent.isEmpty()) {
+            dataResponse.setCode(1);
+            dataResponse.setMsg("该学生在校期间未获奖");
+            return dataResponse;
+        }
+        List<Map> awardPersonList = new ArrayList<>();
+        for (AwardPerson awardPerson : relatedStudent) {
+            awardPersonList.add(getMapFromRelatedStudent(awardPerson));
+        }
+        dataResponse.setCode(0);
+        dataResponse.setMsg("获取学生获奖信息成功");
+        dataResponse.setData(awardPersonList);
+        return dataResponse;
+    }
+
+    public Map getMapFromRelatedStudent(AwardPerson awardPerson) {
+        Map m = new HashMap();
+        if(awardPerson == null)
+            return m;
+        m.put("awardPersonId",awardPerson.getAwardPersonId());
+        m.put("studentName",awardPerson.getStudentName());
+        m.put("studentAge",awardPerson.getStudentAge());
+        m.put("studentGander",awardPerson.getStudentGander());
+        m.put("studentPhone",awardPerson.getStudentPhone());
+        m.put("studentEmail",awardPerson.getStudentEmail());
+        m.put("relatedStudentId",awardPerson.getRelatedStudentId());
+        m.put("awardName",awardPerson.getAward().getAwardName());
+        m.put("awardLevel",awardPerson.getAward().getAwardLevel());
+        m.put("awardTime",awardPerson.getAward().getAwardTime());
+        m.put("awardType",awardPerson.getAward().getAwardType());
+        m.put("awardSize",awardPerson.getAward().getAwardSize());
+        return m;
+    }
+
 }

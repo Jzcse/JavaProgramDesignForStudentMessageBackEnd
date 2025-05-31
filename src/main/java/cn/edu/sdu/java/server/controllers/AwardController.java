@@ -70,4 +70,10 @@ public class AwardController {
         return awardService.CandidatesDelete(dataRequest);
     }
 
+    @PostMapping("/getRelatedStudentForPdf")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse getAwardPersonList(@Valid @RequestBody DataRequest dataRequest){
+        return awardService.getRelatedStudentForPdf(dataRequest);
+    }
+
 }
