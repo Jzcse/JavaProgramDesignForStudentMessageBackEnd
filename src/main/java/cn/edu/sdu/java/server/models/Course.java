@@ -48,12 +48,4 @@ public class Course  {
     private String dayOfWeek;
     @Column(name = "time")
     private String time;
-
-    @ManyToMany
-    @JoinTable(
-        name = "course_selection",
-        joinColumns = @JoinColumn(name = "course_id"),
-        inverseJoinColumns = @JoinColumn(name = "student_id")
-    )
-    private Set<Student> students = new HashSet<>();
 }

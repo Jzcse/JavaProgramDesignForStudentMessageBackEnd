@@ -42,10 +42,4 @@ public class Student {
     @Size(max = 50)
     private String className;
 
-    @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
-    private Set<Course> courses = new HashSet<>();
-    public void addCourse(Course course) {
-        courses.add(course);
-        course.getStudents().add(this);
-    }
 }

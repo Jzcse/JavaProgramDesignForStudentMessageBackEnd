@@ -33,9 +33,5 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
     @Query(value = "from Course where ?1='' or num like %?1% or name like %?2% ")
     Optional<Course> findByNumAndName(String num, String name);
 
-    @Query("SELECT DISTINCT c FROM Course c JOIN c.students s WHERE s.id = :studentId AND c.dayOfWeek = :dayOfWeek")
-    List<Course> findByStudentAndDayOfWeek(@Param("studentId") Integer studentId, @Param("dayOfWeek") String dayOfWeek);
 
-    @Query("SELECT DISTINCT c FROM Course c JOIN c.students s WHERE s.id = :studentId")
-    List<Course> findCourseByStudent(@Param("studentId")Integer studentId);
 }

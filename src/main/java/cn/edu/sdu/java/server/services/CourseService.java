@@ -32,13 +32,17 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
-    private final CourseChooseRepository courseChooseRepository; // 暂时没用到
+    private final CourseChooseRepository courseChooseRepository;
+    private final TeacherRepository teacherRepository;
+    private final CourseTeachingRepository courseTeachingRepository; // 暂时没用到
 
-    public CourseService(CourseRepository courseRepository, StudentRepository studentRepository, UserRepository userRepository, CourseChooseRepository courseChooseRepository) {
+    public CourseService(CourseTeachingRepository courseTeachingRepository,TeacherRepository teacherRepository,CourseRepository courseRepository, StudentRepository studentRepository, UserRepository userRepository, CourseChooseRepository courseChooseRepository) {
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
         this.courseChooseRepository = courseChooseRepository;
+        this.teacherRepository = teacherRepository;
+        this.courseTeachingRepository = courseTeachingRepository;
     }
 
     @Autowired
@@ -191,13 +195,31 @@ public class CourseService {
      * */
     @Transactional
     public DataResponse courseDelete(DataRequest dataRequest) {
-        Map<String, Object> courseMap = dataRequest.getMap("course");
-        Integer courseId = CommonMethod.getInteger(courseMap, "courseId");
-        if (courseId == null || courseId < 1) {
-            return CommonMethod.getReturnMessageError("课程不存在");
+        try {
+            Map<String, Object> courseMap = dataRequest.getMap("course");
+            Integer courseId = CommonMethod.getInteger(courseMap, "courseId");
+            if (courseId == null || courseId < 1) {
+                return CommonMethod.getReturnMessageError("课程不存在");
+            }
+            Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("未找到该课程"));
+            List<Student> students = courseChooseRepository.findStudentByCourse(courseId);
+            List<Teacher> teachers = courseTeachingRepository.findTeacherByCourse(courseId);
+            CourseChoose courseChoose;
+            for (Student student : students) {
+                courseChoose = courseChooseRepository.findByStudentCourse(student.getStudentId(), courseId);
+                Integer courseChooseId = courseChoose.getCourseChooseId();
+                courseChooseRepository.delete(courseChoose);
+            }
+            for (Teacher teacher : teachers) {
+            CourseTeaching courseTeaching = courseTeachingRepository.findByCourseAndTeacher(teacher.getPersonId(), courseId);
+            Integer courseChooseId = courseTeaching.getCourseTeachingId();
+            courseTeachingRepository.delete(courseTeaching);
         }
-        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("未找到该课程"));
-        courseRepository.delete(course);
+            courseRepository.delete(course);
+        } catch (Exception e) {
+            return CommonMethod.getReturnMessageError("删除失败");
+        }
+
         return CommonMethod.getReturnMessageOK();
     }
 
@@ -457,4 +479,106 @@ public class CourseService {
     }
 
 
+    public DataResponse getTeacherCourseList(@Valid DataRequest dataRequest) {
+        Map<String, Object> selectionMap = dataRequest.getMap("selection");
+        String teacherId1 = CommonMethod.getString(selectionMap, "teacherId");
+        Integer teacherId = Integer.parseInt(teacherId1);
+
+        List<String> weekDays = Arrays.asList("星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日");
+        Map<String, List<Map<String, String>>> result = new HashMap<>();
+
+        for (String day : weekDays) {
+            List<Map<String, String>> dayCourses = new ArrayList<>();
+
+            for (Course course : courseTeachingRepository.findByTeacherAndDayOfWeek(teacherId, day)) {
+                Map<String, String> courseInfo = new HashMap<>();
+                courseInfo.put("name", course.getName());
+                courseInfo.put("time", course.getTime());
+                dayCourses.add(courseInfo);
+            }
+
+            result.put(day, dayCourses);
+        }
+
+        return CommonMethod.getReturnData(result);
+    }
+
+    public DataResponse addCourseTeacher(@Valid DataRequest dataRequest) {
+        Map<String, Object> selectionMap = (Map<String, Object>) dataRequest.getMap("selection");
+        String courseId1 = CommonMethod.getString(selectionMap, "courseId");
+        String teacherId1 = CommonMethod.getString(selectionMap, "teacherId");
+        Integer courseId = Integer.parseInt(courseId1);
+        Integer teacherId = Integer.parseInt(teacherId1);
+
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("课程不存在"));
+        Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(() -> new RuntimeException("教师不存在"));
+
+        CourseTeaching courseTeaching = courseTeachingRepository.findByCourseAndTeacher(teacherId, courseId);
+        if (courseTeaching != null) {
+            return CommonMethod.getReturnMessageError("该课程已经有该教师");
+        }
+        List<Course> originalCourses = courseTeachingRepository.findByTeacher(teacherId);
+        for (Course course1 : originalCourses) {
+            if (course1.getDayOfWeek().equals(course.getDayOfWeek()) && course1.getTime().equals(course.getTime())) {
+                return CommonMethod.getReturnMessageError("与已选课程时间冲突");
+            }
+        }
+        courseTeaching = new CourseTeaching();
+        courseTeaching.setCourse(course);
+        courseTeaching.setTeacher(teacher);
+        courseTeachingRepository.save(courseTeaching);
+        return CommonMethod.getReturnMessageOK();
+    }
+
+    public DataResponse deleteCourseTeacher(@Valid DataRequest dataRequest) {
+        Map<String, Object> selectionMap = (Map<String, Object>) dataRequest.getMap("selection");
+        String courseId1 = CommonMethod.getString(selectionMap, "courseId");
+        String teacherId1 = CommonMethod.getString(selectionMap, "teacherId");
+        Integer courseId = Integer.parseInt(courseId1);
+        Integer teacherId = Integer.parseInt(teacherId1);
+
+        CourseTeaching courseTeaching = courseTeachingRepository.findByCourseAndTeacher(teacherId, courseId);
+        if (courseTeaching == null) {
+            return CommonMethod.getReturnMessageError("该课程没有该教师");
+        }
+        courseTeachingRepository.delete(courseTeaching);
+        return CommonMethod.getReturnMessageOK();
+    }
+
+    public DataResponse getTeacherCourseListResult(@Valid DataRequest dataRequest) {
+        Map<String, Object> selectionMap = dataRequest.getMap("selection");
+        String teacherId1 = CommonMethod.getString(selectionMap, "teacherId");
+        Integer teacherId = Integer.parseInt(teacherId1);
+
+        List<Course> courses = courseTeachingRepository.findByTeacher(teacherId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Course course : courses) {
+            Map<String, Object> courseInfo = new HashMap<>();
+            courseInfo.put("courseId", course.getCourseId().toString());
+            courseInfo.put("num", course.getNum().toString());
+            courseInfo.put("name", course.getName());
+            courseInfo.put("time", course.getTime());
+            courseInfo.put("credit", course.getCredit());
+            courseInfo.put("preCourseName", course.getPreCourse() != null ? course.getPreCourse().getName() : "");
+            courseInfo.put("classroom", course.getClassroom());
+            courseInfo.put("dayOfWeek", course.getDayOfWeek());
+            result.add(courseInfo);
+        }
+        return CommonMethod.getReturnData(result);
+    }
+
+    public DataResponse courseTotal(@Valid DataRequest dataRequest) {
+        Map<String, Object> selectionMap = dataRequest.getMap("selection");
+        String teacherId1 = CommonMethod.getString(selectionMap, "teacherId");
+        Integer teacherId = Integer.parseInt(teacherId1);
+
+        List<Course> courses = courseTeachingRepository.findByTeacher(teacherId);
+        int totalCourse = 0;
+        for (Course course : courses) {
+            totalCourse += 1;
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalCourse", totalCourse);
+        return CommonMethod.getReturnData(result);
+    }
 }

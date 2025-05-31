@@ -80,4 +80,24 @@ public class CourseController {
     public DataResponse getSingleCourse(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getSingleCourse(dataRequest);
     }
+    @PostMapping("/getTeacherCourseList")
+    public DataResponse getTeacherCourseList(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getTeacherCourseList(dataRequest);
+    }
+    @PostMapping("/addCourseTeacher")
+    public DataResponse addCourseTeacher(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.addCourseTeacher(dataRequest);
+    }
+    @PostMapping("/deleteCourseTeacher")
+    public DataResponse deleteCourseTeacher(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.deleteCourseTeacher(dataRequest);
+    }
+    @PostMapping("/getTeacherCourseListResult")
+    public DataResponse getTeacherCourseListResult(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getTeacherCourseListResult(dataRequest);
+    }
+    @PostMapping("/courseTotal")
+    public DataResponse courseTotal(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.courseTotal(dataRequest);
+    }
 }
