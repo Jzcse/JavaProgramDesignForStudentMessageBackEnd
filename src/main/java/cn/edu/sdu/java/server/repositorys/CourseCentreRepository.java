@@ -16,5 +16,7 @@ import java.util.Optional;
 public interface CourseCentreRepository extends JpaRepository<courseCentre,Integer> {
     @Query("SELECT cc FROM courseCentre cc JOIN cc.course c WHERE c.name LIKE %:name%")
     List<courseCentre> findByCourseNameContaining(@Param("name") String name);
+    @Query("SELECT cc FROM courseCentre cc where cc.course.courseId = :courseId")
+    courseCentre findByCourse(Integer courseId);
 }
 

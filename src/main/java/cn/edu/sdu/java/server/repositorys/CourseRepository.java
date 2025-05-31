@@ -33,5 +33,6 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
     @Query(value = "from Course where ?1='' or num like %?1% or name like %?2% ")
     Optional<Course> findByNumAndName(String num, String name);
 
-
+    @Query(value = "select course from Course course where course.preCourse.courseId=?1")
+    Course findByPreCourseId(Integer courseId);
 }

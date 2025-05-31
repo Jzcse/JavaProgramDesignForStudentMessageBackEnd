@@ -80,6 +80,10 @@ public class CourseController {
     public DataResponse getSingleCourse(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getSingleCourse(dataRequest);
     }
+    @PostMapping("/getSingleCourseAndScore")
+    public DataResponse getSingleCourseAndScore(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getSingleCourseAndScore(dataRequest);
+    }
     @PostMapping("/getTeacherCourseList")
     public DataResponse getTeacherCourseList(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getTeacherCourseList(dataRequest);

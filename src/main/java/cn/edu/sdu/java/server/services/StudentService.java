@@ -329,13 +329,13 @@ public class StudentService {
         Course c;
         for (Score s : sList) {
             c = s.getCourse();
-            if (s.getMark() >= 90)
+            if (Integer.parseInt(s.getMark())>= 90)
                 count[0]++;
-            else if (s.getMark() >= 80)
+            else if (Integer.parseInt(s.getMark()) >= 80)
                 count[1]++;
-            else if (s.getMark() >= 70)
+            else if (Integer.parseInt(s.getMark()) >= 70)
                 count[2]++;
-            else if (s.getMark() >= 60)
+            else if (Integer.parseInt(s.getMark()) >= 60)
                 count[3]++;
             else
                 count[4]++;

@@ -30,19 +30,21 @@ import java.util.*;
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
+    private final ScoreRepository scoreRepository;
     private final StudentRepository studentRepository;
     private final CourseChooseRepository courseChooseRepository;
     private final TeacherRepository teacherRepository;
-    private final CourseTeachingRepository courseTeachingRepository; // 暂时没用到
+    private final CourseTeachingRepository courseTeachingRepository;
+    private final CourseCentreRepository courseCentreRepository; // 暂时没用到
 
-    public CourseService(CourseTeachingRepository courseTeachingRepository,TeacherRepository teacherRepository,CourseRepository courseRepository, StudentRepository studentRepository, UserRepository userRepository, CourseChooseRepository courseChooseRepository) {
+    public CourseService( ScoreRepository scoreRepository,CourseCentreRepository courseCentreRepository,CourseTeachingRepository courseTeachingRepository,TeacherRepository teacherRepository,CourseRepository courseRepository, StudentRepository studentRepository, CourseChooseRepository courseChooseRepository) {
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
-        this.userRepository = userRepository;
+        this.scoreRepository = scoreRepository;
         this.courseChooseRepository = courseChooseRepository;
         this.teacherRepository = teacherRepository;
         this.courseTeachingRepository = courseTeachingRepository;
+        this.courseCentreRepository = courseCentreRepository;
     }
 
     @Autowired
@@ -197,22 +199,33 @@ public class CourseService {
     public DataResponse courseDelete(DataRequest dataRequest) {
         try {
             Map<String, Object> courseMap = dataRequest.getMap("course");
-            Integer courseId = CommonMethod.getInteger(courseMap, "courseId");
-            if (courseId == null || courseId < 1) {
-                return CommonMethod.getReturnMessageError("课程不存在");
+            String courseId1 = CommonMethod.getString(courseMap, "courseId");
+            Integer courseId = Integer.parseInt(courseId1);
+            Course sonCourse = courseRepository.findByPreCourseId(courseId);
+            if (sonCourse != null) {
+                String sonCourseName = sonCourse.getName();
+                return CommonMethod.getReturnMessageError("该课程有子课程，不能删除"+"，请先删除子课程:"+sonCourseName);
             }
             Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("未找到该课程"));
             List<Student> students = courseChooseRepository.findStudentByCourse(courseId);
             List<Teacher> teachers = courseTeachingRepository.findTeacherByCourse(courseId);
+            List<Score> scores = scoreRepository.findByCourseId(courseId);
+
             CourseChoose courseChoose;
+            CourseTeaching courseTeaching;
+            courseCentre courseCentre1 = courseCentreRepository.findByCourse(courseId);
+            if (courseCentre1!= null) {
+                courseCentreRepository.delete(courseCentre1);
+            }
+            for (Score score : scores) {
+                scoreRepository.delete(score);
+            }
             for (Student student : students) {
                 courseChoose = courseChooseRepository.findByStudentCourse(student.getStudentId(), courseId);
-                Integer courseChooseId = courseChoose.getCourseChooseId();
                 courseChooseRepository.delete(courseChoose);
             }
             for (Teacher teacher : teachers) {
-            CourseTeaching courseTeaching = courseTeachingRepository.findByCourseAndTeacher(teacher.getPersonId(), courseId);
-            Integer courseChooseId = courseTeaching.getCourseTeachingId();
+             courseTeaching = courseTeachingRepository.findByCourseAndTeacher(teacher.getPersonId(), courseId);
             courseTeachingRepository.delete(courseTeaching);
         }
             courseRepository.delete(course);
@@ -468,7 +481,7 @@ public class CourseService {
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("课程不存在"));
         Map<String, Object> result = new HashMap<>();
         result.put("name", course.getName());
-        result.put("num", course.getNum().toString());
+        result.put("num", course.getNum());
         result.put("coursePath", course.getCoursePath());
         result.put("credit", course.getCredit());
         result.put("classroom", course.getClassroom());
@@ -549,11 +562,17 @@ public class CourseService {
         Map<String, Object> selectionMap = dataRequest.getMap("selection");
         String teacherId1 = CommonMethod.getString(selectionMap, "teacherId");
         Integer teacherId = Integer.parseInt(teacherId1);
-
+        Integer studentTotal = 0;
         List<Course> courses = courseTeachingRepository.findByTeacher(teacherId);
         List<Map<String, Object>> result = new ArrayList<>();
         for (Course course : courses) {
+            List<Student> students = courseChooseRepository.findStudentByCourse(course.getCourseId());
+            studentTotal = 0;
+            for (Student student : students) {
+                studentTotal++;
+            }
             Map<String, Object> courseInfo = new HashMap<>();
+            courseInfo.put("studentTotal", studentTotal.toString());
             courseInfo.put("courseId", course.getCourseId().toString());
             courseInfo.put("num", course.getNum().toString());
             courseInfo.put("name", course.getName());
@@ -573,12 +592,42 @@ public class CourseService {
         Integer teacherId = Integer.parseInt(teacherId1);
 
         List<Course> courses = courseTeachingRepository.findByTeacher(teacherId);
-        int totalCourse = 0;
+        Integer totalCourse = 0;
         for (Course course : courses) {
             totalCourse += 1;
         }
         Map<String, Object> result = new HashMap<>();
-        result.put("totalCourse", totalCourse);
+        result.put("totalCourse", totalCourse.toString());
+        return CommonMethod.getReturnData(result);
+    }
+
+    public DataResponse getSingleCourseAndScore(@Valid DataRequest dataRequest) {
+        Map<String, Object> courseMap = dataRequest.getMap("course");
+        String courseId1 = CommonMethod.getString(courseMap, "courseId");
+        Integer courseId = Integer.parseInt(courseId1);
+        String weightOfPerformance;
+        String weightOfMidTerm;
+        String weightOfFinal;
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("课程不存在"));
+        List<Score> scores = scoreRepository.findByCourseId(courseId);
+        if (scores.isEmpty()) {
+            return CommonMethod.getReturnMessageError("该课程没有成绩");
+        }
+        weightOfPerformance = scores.getFirst().getWeightOfPerformance();
+        weightOfMidTerm = scores.getFirst().getWeightOfMidTerm();
+        weightOfFinal = scores.getFirst().getWeightOfFinalTerm();
+        Map<String, Object> result = new HashMap<>();
+        result.put("name", course.getName());
+        result.put("num", course.getNum());
+        result.put("coursePath", course.getCoursePath());
+        result.put("credit", course.getCredit());
+        result.put("classroom", course.getClassroom());
+        result.put("dayOfWeek", course.getDayOfWeek());
+        result.put("time", course.getTime());
+        result.put("weightOfPerformance", weightOfPerformance);
+        result.put("weightOfMidTerm", weightOfMidTerm);
+        result.put("weightOfFinal", weightOfFinal);
+        result.put("preCourseName", course.getPreCourse() != null ? course.getPreCourse().getName() : "");
         return CommonMethod.getReturnData(result);
     }
 }

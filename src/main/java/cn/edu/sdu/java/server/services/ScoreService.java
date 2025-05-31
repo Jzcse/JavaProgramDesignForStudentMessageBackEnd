@@ -7,10 +7,9 @@ import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.payload.response.OptionItem;
 import cn.edu.sdu.java.server.payload.response.OptionItemList;
-import cn.edu.sdu.java.server.repositorys.CourseRepository;
-import cn.edu.sdu.java.server.repositorys.ScoreRepository;
-import cn.edu.sdu.java.server.repositorys.StudentRepository;
+import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +20,15 @@ public class ScoreService {
     private final CourseRepository courseRepository;
     private final ScoreRepository scoreRepository;
     private final StudentRepository studentRepository;
+    private final CourseTeachingRepository courseTeachingRepository;
+    private final CourseChooseRepository courseChooseRepository;
 
-    public ScoreService(CourseRepository courseRepository, ScoreRepository scoreRepository, StudentRepository studentRepository) {
+    public ScoreService( CourseChooseRepository courseChooseRepository,CourseTeachingRepository courseTeachingRepository,CourseRepository courseRepository, ScoreRepository scoreRepository, StudentRepository studentRepository) {
         this.courseRepository = courseRepository;
         this.scoreRepository = scoreRepository;
         this.studentRepository = studentRepository;
+        this.courseTeachingRepository = courseTeachingRepository;
+        this.courseChooseRepository = courseChooseRepository;
     }
     public OptionItemList getStudentItemOptionList( DataRequest dataRequest) {
         List<Student> studentList = studentRepository.findStudentListByNumName("");  //数据库查询操作
@@ -215,5 +218,159 @@ public class ScoreService {
             scoreRepository.save(scoreAdd);
         }
         return CommonMethod.getReturnMessageOK();
+    }
+    private Double countWeightScore(Integer markOfPerformance,Integer markOfMidTerm,Integer markOfFinalTerm,Double weightOfPerformance,Double weightOfMidTerm,Double weightOfFinalTerm){
+        return markOfPerformance*weightOfPerformance+markOfMidTerm*weightOfMidTerm+markOfFinalTerm*weightOfFinalTerm;
+    }
+    public DataResponse getStudentAndScore(@Valid DataRequest dataRequest) {
+        Map<String,Object> scoreMap = dataRequest.getMap("score");
+        String teacherId1 = CommonMethod.getString(scoreMap,"teacherId");
+        String courseId1 = CommonMethod.getString(scoreMap,"courseId");
+        Integer teacherId = Integer.parseInt(teacherId1);
+        Integer courseId = Integer.parseInt(courseId1);
+        List<Student> studentList = courseChooseRepository.findStudentByCourse(courseId);
+
+        String studentName;
+        Score score;
+        Integer markOfPerformance = 0;
+        Integer markOfMidTerm = 0;
+        Integer markOfFinalTerm = 0;
+        Double weightOfPerformance = 0.3;
+        Double weightOfMidTerm = 0.3;
+        Double weightOfFinalTerm = 0.4;
+        Integer testScore = 0;
+        Map<String,Object> studentMap;
+        List<Map<String,Object>> studentMapList = new ArrayList<>();
+
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("未找到对应课程，ID：" + courseId));
+        for(Student student:studentList){
+                score = scoreRepository.findByStudentAndCourse(student.getStudentId(),course.getCourseId());
+                studentName = student.getPerson().getName();
+                studentMap = new HashMap<>();
+                studentMap.put("studentId",student.getStudentId().toString()+"");
+                studentMap.put("studentName",studentName);
+                studentMap.put("studentNum",student.getPerson().getNum().toString()+"");
+                studentMap.put("className",student.getClassName());
+                if(score!=null){
+                    markOfPerformance = Integer.parseInt(score.getMarkOfPerformance());
+                    markOfMidTerm = Integer.parseInt(score.getMarkOfMidTerm());
+                    markOfFinalTerm = Integer.parseInt(score.getMarkOfFinalTerm());
+                    weightOfPerformance = Double.parseDouble(score.getWeightOfPerformance());
+                    weightOfMidTerm = Double.parseDouble(score.getWeightOfMidTerm());
+                    weightOfFinalTerm = Double.parseDouble(score.getWeightOfFinalTerm());
+                    Double mark = countWeightScore(markOfPerformance,markOfMidTerm,markOfFinalTerm,weightOfPerformance,weightOfMidTerm,weightOfFinalTerm);
+                    testScore = markOfPerformance*markOfMidTerm*markOfFinalTerm;
+                    String totalScore = mark.toString();
+                    if (testScore != 0) {
+                        studentMap.put("totalScore", totalScore);
+                    } else {
+                        studentMap.put("totalScore", "");
+                    }
+                }
+                studentMap.put("markOfPerformance",markOfPerformance.toString());
+                studentMap.put("markOfMidTerm",markOfMidTerm.toString());
+                studentMap.put("markOfFinalTerm",markOfFinalTerm.toString());
+                studentMapList.add(studentMap);
+        }
+        return CommonMethod.getReturnData(studentMapList);
+    }
+
+    public DataResponse setWeightByCourse(@Valid DataRequest dataRequest) {
+        Map<String,Object> scoreMap = dataRequest.getMap("score");
+        String courseId1 = CommonMethod.getString(scoreMap,"courseId");
+        Integer courseId = Integer.parseInt(courseId1);
+        List<Score> scores = scoreRepository.findByCourseId(courseId);
+        if(scores.isEmpty())
+            return CommonMethod.getReturnMessageError("该课程不存在成绩");
+        for(Score score:scores){
+            String PerformanceWeight = CommonMethod.getString(scoreMap,"performanceWeight");
+            String MidTermWeight = CommonMethod.getString(scoreMap,"midTermWeight");
+            String FinalTermWeight = CommonMethod.getString(scoreMap,"finalTermWeight");
+            score.setWeightOfPerformance(PerformanceWeight);
+            score.setWeightOfMidTerm(MidTermWeight);
+            score.setWeightOfFinalTerm(FinalTermWeight);
+            scoreRepository.save(score);
+        }
+        return CommonMethod.getReturnMessageOK();
+
+    }
+
+    public DataResponse ScoreInitializationByCourse(@Valid DataRequest dataRequest) {
+        Map<String,Object> scoreMap = dataRequest.getMap("score");
+        String courseId1 = CommonMethod.getString(scoreMap,"courseId");
+        Integer courseId = Integer.parseInt(courseId1);
+        List<Student> studentList = courseChooseRepository.findStudentByCourse(courseId);
+        Score score;
+        Integer mark = 0;
+        Integer markOfPerformance = 0;
+        Integer markOfMidTerm = 0;
+        Integer markOfFinalTerm = 0;
+        Double weightOfPerformance = 0.3;
+        Double weightOfMidTerm = 0.3;
+        Double weightOfFinalTerm = 0.4;
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("未找到对应课程，ID：" + courseId));
+        for(Student student:studentList){
+                score = new Score();
+                score.setStudent(student);
+                score.setCourse(course);
+                score.setMark(mark.toString());
+                score.setMarkOfPerformance(markOfPerformance.toString());
+                score.setMarkOfMidTerm(markOfMidTerm.toString());
+                score.setMarkOfFinalTerm(markOfFinalTerm.toString());
+                score.setWeightOfPerformance(weightOfPerformance.toString());
+                score.setWeightOfMidTerm(weightOfMidTerm.toString());
+                score.setWeightOfFinalTerm(weightOfFinalTerm.toString());
+                score.setMark(String.valueOf(Double.parseDouble(markOfPerformance.toString())*Double.parseDouble(weightOfPerformance.toString())+Double.parseDouble(markOfMidTerm.toString())*Double.parseDouble(weightOfMidTerm.toString())+Double.parseDouble(markOfFinalTerm.toString())*Double.parseDouble(weightOfFinalTerm.toString())));
+                scoreRepository.save(score);
+        }
+        return CommonMethod.getReturnMessageOK();
+    }
+
+    public DataResponse rankScore(@Valid DataRequest dataRequest) {
+        Map<String,Object> scoreMap = dataRequest.getMap("score");
+        String courseId1 = CommonMethod.getString(scoreMap,"courseId");
+        String studentId1 = CommonMethod.getString(scoreMap,"studentId");
+        String markOfMidTerm1 = CommonMethod.getString(scoreMap,"markOfMidTerm");
+        String markOfFinalTerm1 = CommonMethod.getString(scoreMap,"markOfFinalTerm");
+        String markOfPerformance1 = CommonMethod.getString(scoreMap,"markOfPerformance");
+
+        Integer markOfMidTerm = markOfMidTerm1.isEmpty() ? 0 : Integer.parseInt(markOfMidTerm1);
+        Integer markOfFinalTerm = markOfFinalTerm1.isEmpty() ? 0 : Integer.parseInt(markOfFinalTerm1);
+        Integer markOfPerformance = markOfPerformance1.isEmpty() ? 0 : Integer.parseInt(markOfPerformance1);
+
+        Integer studentId = Integer.parseInt(studentId1);
+        Integer courseId = Integer.parseInt(courseId1);
+        Score score = scoreRepository.findByStudentAndCourse(studentId,courseId);
+        double weightOfPerformance = 0.3;
+        double weightOfMidTerm = 0.3;
+        double weightOfFinalTerm = 0.4;
+        if(score == null)
+            return CommonMethod.getReturnMessageError("该学生未参加该课程");
+        Double mark = countWeightScore(markOfPerformance,markOfMidTerm,markOfFinalTerm,weightOfPerformance,weightOfMidTerm,weightOfFinalTerm);
+        score.setMark(mark.toString());
+        score.setMarkOfPerformance(markOfPerformance.toString());
+        score.setMarkOfMidTerm(markOfMidTerm.toString());
+        score.setMarkOfFinalTerm(markOfFinalTerm.toString());
+        scoreRepository.save(score);
+        return CommonMethod.getReturnMessageOK();
+    }
+
+    public DataResponse getSingleScoreAndStudent(@Valid DataRequest dataRequest) {
+        Map<String,Object> scoreMap = dataRequest.getMap("score");
+        String courseId1 = CommonMethod.getString(scoreMap,"courseId");
+        String studentId1 = CommonMethod.getString(scoreMap,"studentId");
+        Integer courseId = Integer.parseInt(courseId1);
+        Integer studentId = Integer.parseInt(studentId1);
+        Score score = scoreRepository.findByStudentAndCourse(studentId,courseId);
+        if(score == null)
+            return CommonMethod.getReturnMessageError("该学生未参加该课程");
+        Map<String,Object> studentMap = new HashMap<>();
+        studentMap.put("studentName",score.getStudent().getPerson().getName());
+        studentMap.put("studentNum",score.getStudent().getPerson().getNum());
+        studentMap.put("className",score.getStudent().getClassName());
+        studentMap.put("markOfPerformance",score.getMarkOfPerformance());
+        studentMap.put("markOfMidTerm",score.getMarkOfMidTerm());
+        studentMap.put("markOfFinalTerm",score.getMarkOfFinalTerm());;
+        return CommonMethod.getReturnData(studentMap);
     }
 }

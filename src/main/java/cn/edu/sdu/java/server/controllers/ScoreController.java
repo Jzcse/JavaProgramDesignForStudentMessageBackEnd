@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/score")
 public class ScoreController {
     private final ScoreService scoreService;
+
     public ScoreController(ScoreService scoreService) {
         this.scoreService = scoreService;
     }
+
     @PostMapping("/getStudentItemOptionList")
     public OptionItemList getStudentItemOptionList(@Valid @RequestBody DataRequest dataRequest) {
         return scoreService.getStudentItemOptionList(dataRequest);
@@ -30,16 +32,44 @@ public class ScoreController {
     public DataResponse getScoreList(@Valid @RequestBody DataRequest dataRequest) {
         return scoreService.getScoreList(dataRequest);
     }
+
     @PostMapping("/scoreSave")
     public DataResponse scoreSave(@Valid @RequestBody DataRequest dataRequest) {
         return scoreService.scoreSave(dataRequest);
     }
+
     @PostMapping("/scoreDelete")
     public DataResponse scoreDelete(@Valid @RequestBody DataRequest dataRequest) {
         return scoreService.scoreDelete(dataRequest);
     }
+
     @PostMapping("/setWeight")
     public DataResponse setWeight(@Valid @RequestBody DataRequest dataRequest) {
         return scoreService.setWeight(dataRequest);
+    }
+
+    @PostMapping("/getStudentAndScore")
+    public DataResponse getStudentAndScore(@Valid @RequestBody DataRequest dataRequest) {
+        return scoreService.getStudentAndScore(dataRequest);
+    }
+
+    @PostMapping("/setWeightByCourse")
+    public DataResponse setWeightByCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return scoreService.setWeightByCourse(dataRequest);
+    }
+
+    @PostMapping("/ScoreInitializationByCourse")
+    public DataResponse ScoreInitializationByCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return scoreService.ScoreInitializationByCourse(dataRequest);
+    }
+
+    @PostMapping("/rankScore")
+    public DataResponse rankScore(@Valid @RequestBody DataRequest dataRequest) {
+        return scoreService.rankScore(dataRequest);
+    }
+
+    @PostMapping("/getSingleScoreAndStudent")
+    public DataResponse getSingleScoreAndStudent(@Valid @RequestBody DataRequest dataRequest) {
+        return scoreService.getSingleScoreAndStudent(dataRequest);
     }
 }

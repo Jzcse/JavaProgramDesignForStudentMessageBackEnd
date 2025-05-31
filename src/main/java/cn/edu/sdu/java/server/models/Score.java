@@ -2,6 +2,7 @@ package cn.edu.sdu.java.server.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
 /**
  * Score 成绩表实体类  保存成绩的的基本信息信息，
@@ -15,6 +16,7 @@ import jakarta.validation.constraints.Size;
 @Table(	name = "score",
         uniqueConstraints = {
         })
+@Data
 public class Score {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,8 +30,13 @@ public class Score {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private Teacher teacher;
+
     private String mark;
 
+    private String ranking;
     //平时分
     private String markOfPerformance;
     //期中考试分
@@ -43,94 +50,5 @@ public class Score {
     //期末考权重
     private String weightOfFinalTerm;
 
-    public String getMarkOfPerformance() {
-        return markOfPerformance;
-    }
 
-    public void setMarkOfPerformance(String markOfPerformance) {
-        this.markOfPerformance = markOfPerformance;
-    }
-
-    public String getMarkOfFinalTerm() {
-        return markOfFinalTerm;
-    }
-
-    public void setMarkOfFinalTerm(String markOfFinalTerm) {
-        this.markOfFinalTerm = markOfFinalTerm;
-    }
-
-    public String getWeightOfPerformance() {
-        return weightOfPerformance;
-    }
-
-    public void setWeightOfPerformance(String weightOfPerformance) {
-        this.weightOfPerformance = weightOfPerformance;
-    }
-
-    public String getWeightOfMidTerm() {
-        return weightOfMidTerm;
-    }
-
-    public void setWeightOfMidTerm(String weightOfMidTerm) {
-        this.weightOfMidTerm = weightOfMidTerm;
-    }
-
-    public String getWeightOfFinalTerm() {
-        return weightOfFinalTerm;
-    }
-
-    public void setWeightOfFinalTerm(String weightOfFinalTerm) {
-        this.weightOfFinalTerm = weightOfFinalTerm;
-    }
-
-    public String getMarkOfMidTerm() {
-        return markOfMidTerm;
-    }
-
-    public void setMarkOfMidTerm(String markOfMidTerm) {
-        this.markOfMidTerm = markOfMidTerm;
-    }
-
-    private Integer ranking;
-
-
-    public Integer getScoreId() {
-        return scoreId;
-    }
-
-    public void setScoreId(Integer scoreId) {
-        this.scoreId = scoreId;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student student) {
-        this.student = student;
-    }
-
-    public Course getCourse() {
-        return course;
-    }
-
-    public void setCourse(Course course) {
-        this.course = course;
-    }
-
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(String mark) {
-        this.mark = mark;
-    }
-
-    public Integer getRanking() {
-        return ranking;
-    }
-
-    public void setRanking(Integer ranking) {
-        this.ranking = ranking;
-    }
 }
