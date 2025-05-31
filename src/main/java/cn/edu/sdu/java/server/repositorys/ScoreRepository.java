@@ -1,7 +1,7 @@
 package cn.edu.sdu.java.server.repositorys;
 
 import cn.edu.sdu.java.server.models.Score;
-import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.security.core.parameters.P;
@@ -15,12 +15,12 @@ import java.util.List;
 
 @Repository
 public interface ScoreRepository extends JpaRepository<Score,Integer> {
-    @Query("select score from Score score where score.student.person.id = :personId")
+    @Query("select score from Score score where score.student.studentId = :personId")
     List<Score> findByStudentPersonId(@Param("personId") Integer personId);
-    @Query(value="from Score where (?1=0 or student.person.id=?1) and (?2=0 or course.courseId=?2)" )
-    List<Score> findByStudentCourse(Integer personId, Integer courseId);
 
-    @Query(value="from Score where student.person.id=?1 and (?2=0 or course.name like %?2%)" )
-    List<Score> findByStudentCourse(Integer personId, String courseName);
+    @Query(value="from Score where student.studentId=?1 and  course.courseId=?2" )
+    List<Score> findByStudentCourse(Integer studentId, Integer courseId);
 
+
+    List<Score> findByCourseCourseId(Integer courseId);
 }

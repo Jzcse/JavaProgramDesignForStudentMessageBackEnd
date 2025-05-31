@@ -1,6 +1,8 @@
 package cn.edu.sdu.java.server.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
+
 /**
  * Score 成绩表实体类  保存成绩的的基本信息信息，
  * Integer scoreId 人员表 score 主键 score_id
@@ -26,7 +28,69 @@ public class Score {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    private Integer mark;
+    private String mark;
+
+    //平时分
+    private String markOfPerformance;
+    //期中考试分
+    private String markOfMidTerm;
+    //期末考试分
+    private String markOfFinalTerm;
+    //平时分权重
+    private String weightOfPerformance;
+    //期中考权重
+    private String weightOfMidTerm;
+    //期末考权重
+    private String weightOfFinalTerm;
+
+    public String getMarkOfPerformance() {
+        return markOfPerformance;
+    }
+
+    public void setMarkOfPerformance(String markOfPerformance) {
+        this.markOfPerformance = markOfPerformance;
+    }
+
+    public String getMarkOfFinalTerm() {
+        return markOfFinalTerm;
+    }
+
+    public void setMarkOfFinalTerm(String markOfFinalTerm) {
+        this.markOfFinalTerm = markOfFinalTerm;
+    }
+
+    public String getWeightOfPerformance() {
+        return weightOfPerformance;
+    }
+
+    public void setWeightOfPerformance(String weightOfPerformance) {
+        this.weightOfPerformance = weightOfPerformance;
+    }
+
+    public String getWeightOfMidTerm() {
+        return weightOfMidTerm;
+    }
+
+    public void setWeightOfMidTerm(String weightOfMidTerm) {
+        this.weightOfMidTerm = weightOfMidTerm;
+    }
+
+    public String getWeightOfFinalTerm() {
+        return weightOfFinalTerm;
+    }
+
+    public void setWeightOfFinalTerm(String weightOfFinalTerm) {
+        this.weightOfFinalTerm = weightOfFinalTerm;
+    }
+
+    public String getMarkOfMidTerm() {
+        return markOfMidTerm;
+    }
+
+    public void setMarkOfMidTerm(String markOfMidTerm) {
+        this.markOfMidTerm = markOfMidTerm;
+    }
+
     private Integer ranking;
 
 
@@ -54,11 +118,11 @@ public class Score {
         this.course = course;
     }
 
-    public Integer getMark() {
+    public String getMark() {
         return mark;
     }
 
-    public void setMark(Integer mark) {
+    public void setMark(String mark) {
         this.mark = mark;
     }
 

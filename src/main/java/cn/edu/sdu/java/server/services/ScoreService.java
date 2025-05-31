@@ -12,6 +12,8 @@ import cn.edu.sdu.java.server.repositorys.ScoreRepository;
 import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 
 @Service
@@ -45,36 +47,66 @@ public class ScoreService {
         return new OptionItemList(0, itemList);
     }
 
+    /**
+     * 默认两个id都是0，前端下拉框可以单独选择，另一个不选的话就只查询一个下拉框所选中的条件，两个都选是满足两个条件的查询
+     * @param dataRequest
+     * @return
+     */
+    @Transactional
     public DataResponse getScoreList(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");
-        if(personId == null)
-            personId = 0;
+        Integer studentId = dataRequest.getInteger("studentId");
+        if(studentId == null)
+            studentId = 0;
         Integer courseId = dataRequest.getInteger("courseId");
         if(courseId == null)
             courseId = 0;
-        List<Score> studentList = scoreRepository.findByStudentCourse(personId, courseId);  //数据库查询操作
+        List<Score> studentList = null;
+        if(studentId == 0 && courseId == 0) {
+            studentList = scoreRepository.findAll();
+        }
+        if(studentId != 0 && courseId == 0) {
+            studentList = scoreRepository.findByStudentPersonId(studentId);
+        }
+        if(studentId == 0 && courseId != 0) {
+            studentList = scoreRepository.findByCourseCourseId(courseId);
+        }
+        if(studentId != 0 && courseId!= 0) {
+            studentList = scoreRepository.findByStudentCourse(studentId,courseId);
+        }
         List<Map<String,Object>> dataList = new ArrayList<>();
         Map<String,Object> studentMap;
         for (Score s : studentList) {
             studentMap = new HashMap<>();
+            if(s.getStudent() != null){
+                studentMap.put("personId",s.getStudent().getStudentId()+"");
+                studentMap.put("studentNum",s.getStudent().getPerson().getNum());
+                studentMap.put("studentName",s.getStudent().getPerson().getName());
+                studentMap.put("className",s.getStudent().getClassName());
+            }
             studentMap.put("scoreId", s.getScoreId()+"");
-            studentMap.put("personId",s.getStudent().getStudentId()+"");
             studentMap.put("courseId",s.getCourse().getCourseId()+"");
-            studentMap.put("studentNum",s.getStudent().getPerson().getNum());
-            studentMap.put("studentName",s.getStudent().getPerson().getName());
-            studentMap.put("className",s.getStudent().getClassName());
             studentMap.put("courseNum",s.getCourse().getNum());
             studentMap.put("courseName",s.getCourse().getName());
             studentMap.put("credit",""+s.getCourse().getCredit());
             studentMap.put("mark",""+s.getMark());
+            studentMap.put("PerformanceMark",""+s.getMarkOfPerformance());
+            studentMap.put("MidTermMark",""+s.getMarkOfMidTerm());
+            studentMap.put("FinalTermMark",""+s.getMarkOfFinalTerm());
+            studentMap.put("weightOfMidTerm",""+s.getWeightOfMidTerm());
+            studentMap.put("weightOfFinalTerm",""+s.getWeightOfFinalTerm());
+            studentMap.put("weightOfPerformance",""+s.getWeightOfPerformance());
             dataList.add(studentMap);
         }
         return CommonMethod.getReturnData(dataList);
     }
+    @Transactional
     public DataResponse scoreSave(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
         Integer courseId = dataRequest.getInteger("courseId");
-        Integer mark = dataRequest.getInteger("mark");
+        String PerformanceMark = dataRequest.getString("PerformanceMark");
+        String MidTermMark = dataRequest.getString("MidTermMark");
+        String FinalTermMark = dataRequest.getString("FinalTermMark");
+
         Integer scoreId = dataRequest.getInteger("scoreId");
         Optional<Score> originalScore;
         Score score = null;
@@ -100,7 +132,17 @@ public class ScoreService {
                 throw new RuntimeException("未找到对应课程，ID：" + courseId);
             }
         }
-        score.setMark(mark);
+        String PerformanceWeight = score.getWeightOfPerformance();
+        String MidTermWeight = score.getWeightOfMidTerm();
+        String FinalTermWeight = score.getWeightOfFinalTerm();
+        score.setMarkOfFinalTerm(FinalTermMark);
+        score.setMarkOfMidTerm(MidTermMark);
+        score.setMarkOfPerformance(PerformanceMark);
+        score.setWeightOfFinalTerm(FinalTermWeight);
+        score.setWeightOfMidTerm(MidTermWeight);
+        score.setWeightOfPerformance(PerformanceWeight);
+        double mark = Double.parseDouble(PerformanceMark)*Double.parseDouble(PerformanceWeight)+Double.parseDouble(MidTermMark)*Double.parseDouble(MidTermWeight)+Double.parseDouble(FinalTermMark)*Double.parseDouble(FinalTermWeight);
+        score.setMark(String.valueOf(mark));
         scoreRepository.save(score);
         return CommonMethod.getReturnMessageOK();
     }
@@ -117,5 +159,61 @@ public class ScoreService {
         }
         return CommonMethod.getReturnMessageOK();
     }
+    public DataResponse setWeight(DataRequest dataRequest) {
+        Map WeightMap = dataRequest.getMap("WeightMap");
+        String scoreId = CommonMethod.getString(WeightMap,"scoreId");
+        Optional<Score> originalScore;
+        Score score;
+        if (scoreId != null&&!scoreId.equals("")) {
+            originalScore = scoreRepository.findById(Integer.parseInt(scoreId));
+            if (originalScore.isPresent()) {
+                score = originalScore.get();
+                String PerformanceWeight = CommonMethod.getString(WeightMap,"PerformanceWeight");
+                String MidTermWeight = CommonMethod.getString(WeightMap,"MidTermWeight");
+                String FinalTermWeight = CommonMethod.getString(WeightMap,"FinalTermWeight");
+                String PerformanceMark = CommonMethod.getString(WeightMap,"PerformanceMark");
+                String MidTermMark = CommonMethod.getString(WeightMap,"MidTermMark");
+                String FinalTermMark = CommonMethod.getString(WeightMap,"FinalTermMark");
+                score.setWeightOfPerformance(PerformanceWeight);
+                score.setWeightOfMidTerm(MidTermWeight);
+                score.setWeightOfFinalTerm(FinalTermWeight);
+                score.setMarkOfPerformance(PerformanceMark);
+                score.setMarkOfMidTerm(MidTermMark);
+                score.setMarkOfFinalTerm(FinalTermMark);
+                score.setMark(String.valueOf(Double.parseDouble(PerformanceMark)*Double.parseDouble(PerformanceWeight)+Double.parseDouble(MidTermMark)*Double.parseDouble(MidTermWeight)+Double.parseDouble(FinalTermMark)*Double.parseDouble(FinalTermWeight)));
+                scoreRepository.save(score);
+            }
+        }else{
+            Score scoreAdd = new Score();
+            String PerformanceWeight = CommonMethod.getString(WeightMap,"PerformanceWeight");
+            String MidTermWeight = CommonMethod.getString(WeightMap,"MidTermWeight");
+            String FinalTermWeight = CommonMethod.getString(WeightMap,"FinalTermWeight");
+            String PerformanceMark = CommonMethod.getString(WeightMap,"PerformanceMark");
+            String MidTermMark = CommonMethod.getString(WeightMap,"MidTermMark");
+            String FinalTermMark = CommonMethod.getString(WeightMap,"FinalTermMark");
+            String personId = CommonMethod.getString(WeightMap,"personId");
+            String courseId = CommonMethod.getString(WeightMap,"courseId");
 
+            if(!scoreRepository.findByStudentCourse(Integer.parseInt(personId), Integer.parseInt(courseId)).isEmpty())
+                return CommonMethod.getReturnMessageError("该学生已经存在该课程成绩");
+
+            Optional<Student> studentOptional = studentRepository.findById(Integer.parseInt(personId));
+            if (studentOptional.isPresent()) {
+                scoreAdd.setStudent(studentOptional.get());
+            }
+            Optional<Course> courseOptional = courseRepository.findById(Integer.parseInt(courseId));
+            if (courseOptional.isPresent()) {
+                scoreAdd.setCourse(courseOptional.get());
+            }
+            scoreAdd.setMarkOfPerformance(PerformanceMark);
+            scoreAdd.setMarkOfMidTerm(MidTermMark);
+            scoreAdd.setMarkOfFinalTerm(FinalTermMark);
+            scoreAdd.setWeightOfPerformance(PerformanceWeight);
+            scoreAdd.setWeightOfMidTerm(MidTermWeight);
+            scoreAdd.setWeightOfFinalTerm(FinalTermWeight);
+            scoreAdd.setMark(String.valueOf(Double.parseDouble(PerformanceMark)*Double.parseDouble(PerformanceWeight)+Double.parseDouble(MidTermMark)*Double.parseDouble(MidTermWeight)+Double.parseDouble(FinalTermMark)*Double.parseDouble(FinalTermWeight)));
+            scoreRepository.save(scoreAdd);
+        }
+        return CommonMethod.getReturnMessageOK();
+    }
 }

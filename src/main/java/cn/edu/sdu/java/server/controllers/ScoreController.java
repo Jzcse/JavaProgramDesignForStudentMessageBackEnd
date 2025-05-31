@@ -38,5 +38,8 @@ public class ScoreController {
     public DataResponse scoreDelete(@Valid @RequestBody DataRequest dataRequest) {
         return scoreService.scoreDelete(dataRequest);
     }
-
+    @PostMapping("/setWeight")
+    public DataResponse setWeight(@Valid @RequestBody DataRequest dataRequest) {
+        return scoreService.setWeight(dataRequest);
+    }
 }
