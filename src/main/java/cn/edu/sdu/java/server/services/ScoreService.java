@@ -92,9 +92,9 @@ public class ScoreService {
             studentMap.put("PerformanceMark",""+s.getMarkOfPerformance());
             studentMap.put("MidTermMark",""+s.getMarkOfMidTerm());
             studentMap.put("FinalTermMark",""+s.getMarkOfFinalTerm());
-            studentMap.put("weightOfMidTerm",""+s.getWeightOfMidTerm());
-            studentMap.put("weightOfFinalTerm",""+s.getWeightOfFinalTerm());
-            studentMap.put("weightOfPerformance",""+s.getWeightOfPerformance());
+            studentMap.put("MidTermWeight",""+s.getWeightOfMidTerm());
+            studentMap.put("FinalTermWeight",""+s.getWeightOfFinalTerm());
+            studentMap.put("PerformanceWeight",""+s.getWeightOfPerformance());
             dataList.add(studentMap);
         }
         return CommonMethod.getReturnData(dataList);
