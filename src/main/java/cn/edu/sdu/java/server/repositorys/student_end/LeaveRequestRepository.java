@@ -13,4 +13,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Inte
 
     @Query("select leaveRequest from LeaveRequest leaveRequest where leaveRequest.leaveRequestId = :leaveRequestId")
     LeaveRequest findLeaveRequestByLeaveRequestId(@Param("leaveRequestId") String leaveRequestId);
+
+    @Query("select leaveRequest from LeaveRequest leaveRequest where leaveRequest.student.studentId = :studentId")
+    List<LeaveRequest> getLeaveRequestListByStudentId(Integer studentId);
 }

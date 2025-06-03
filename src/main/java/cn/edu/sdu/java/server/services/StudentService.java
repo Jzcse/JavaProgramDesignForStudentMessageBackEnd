@@ -1,15 +1,18 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.*;
+import cn.edu.sdu.java.server.models.student_end.LeaveRequest;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.*;
+import cn.edu.sdu.java.server.repositorys.student_end.LeaveRequestRepository;
 import cn.edu.sdu.java.server.util.ComDataUtil;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import cn.edu.sdu.java.server.util.DateTimeTool;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +30,18 @@ import java.util.*;
 
 @Service  //spring的Bean
 public class StudentService {
+
+    @Autowired
+    StudentStatisticsRepository studentStatisticsRepository;
+    @Autowired
+    AchievementRepository achievementRepository;
+    @Autowired
+    CourseChooseRepository courseChooseRepository;
+    @Autowired
+    AwardRepository awardRepository;
+    @Autowired
+    AwardPersonRepository awardPersonRepository;
+
     private final PersonRepository personRepository;  //人员数据操作自动注入
     private final StudentRepository studentRepository;  //学生数据操作自动注入
     private final UserRepository userRepository;  //学生数据操作自动注入
@@ -34,10 +49,15 @@ public class StudentService {
     private final PasswordEncoder encoder;  //密码服务自动注入
     private final ScoreRepository scoreRepository;  //成绩数据操作自动注入
     private final FeeRepository feeRepository;  //消费数据操作自动注入
+    private final LeaveRequestRepository leaveRequestRepository;
+    private final InternshipRepository internshipRepository;
     private FamilyMemberRepository familyMemberRepository;
     private final BaseService baseService;   //基本数据处理数据操作自动注入
     private final SystemService systemService;
-    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, ScoreRepository scoreRepository, FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, BaseService baseService, SystemService systemService) {
+    @Autowired
+    private ActivityRepository activityRepository;
+
+    public StudentService(PersonRepository personRepository, StudentRepository studentRepository, UserRepository userRepository, UserTypeRepository userTypeRepository, PasswordEncoder encoder, ScoreRepository scoreRepository, FeeRepository feeRepository, FamilyMemberRepository familyMemberRepository, BaseService baseService, SystemService systemService, LeaveRequestRepository leaveRequestRepository, InternshipRepository internshipRepository) {
         this.personRepository = personRepository;
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
@@ -48,6 +68,8 @@ public class StudentService {
         this.familyMemberRepository = familyMemberRepository;
         this.baseService = baseService;
         this.systemService = systemService;
+        this.leaveRequestRepository = leaveRequestRepository;
+        this.internshipRepository = internshipRepository;
     }
 
     public Map getMapFromStudent(Student s) {
@@ -104,7 +126,7 @@ public class StudentService {
         Student s = null;
         Optional<Student> op;
         if (personId != null) {
-            op = studentRepository.findById(personId);   //查询获得实体对象
+            op = studentRepository.findByPersonId(personId);   //查询获得实体对象
             if (op.isPresent()) {
                 s = op.get();
             }
@@ -114,6 +136,40 @@ public class StudentService {
             if (uOp.isPresent()) {
                 userRepository.delete(uOp.get()); //删除对应该学生的账户
             }
+
+            // 删除学生的家庭成员信息
+            List<FamilyMember> familyMembers = familyMemberRepository.findByStudentPersonId(personId);
+            familyMemberRepository.deleteAll(familyMembers);
+
+            // 删除学生的请假信息
+            List<LeaveRequest> leaveRequests = leaveRequestRepository.getLeaveRequestListByStudentId(s.getStudentId());
+            leaveRequestRepository.deleteAll(leaveRequests);
+
+            // 删除学生的消费信息
+            List<Fee> fees = feeRepository.findListByStudent(personId);
+            feeRepository.deleteAll(fees);
+
+            // 删除学生的校外实习信息
+            List<Internship> internships = internshipRepository.findByPersonId(personId);
+            internshipRepository.deleteAll(internships);
+
+            // 删除学生的统计信息
+            List<StudentStatistics> studentStatistics = studentStatisticsRepository.findByStudentId(s.getStudentId());
+
+            // 删除学生的成绩信息
+            List<Score> scores = scoreRepository.findByStudentId(s.getStudentId());
+            scoreRepository.deleteAll(scores);
+
+            // 删除学生的选课信息
+            List<CourseChoose> courseChooses = courseChooseRepository.findByStudentId(s.getStudentId());
+            courseChooseRepository.deleteAll(courseChooses);
+
+            // 删除学生的奖项信息
+            List<AwardPerson> awardPersons = awardPersonRepository.findByStudentId(s.getStudentId());
+            awardPersonRepository.deleteAll(awardPersons);
+
+
+
             Person p = s.getPerson();
             studentRepository.delete(s);    //首先数据库永久删除学生信息
             personRepository.delete(p);   // 然后数据库永久删除学生信息

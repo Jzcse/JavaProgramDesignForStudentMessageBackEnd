@@ -3,10 +3,7 @@ package cn.edu.sdu.java.server.services;
 import cn.edu.sdu.java.server.models.*;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
-import cn.edu.sdu.java.server.repositorys.PersonRepository;
-import cn.edu.sdu.java.server.repositorys.TeacherRepository;
-import cn.edu.sdu.java.server.repositorys.UserRepository;
-import cn.edu.sdu.java.server.repositorys.UserTypeRepository;
+import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import cn.edu.sdu.java.server.util.DateTimeTool;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,6 +42,11 @@ public class TeacherService {
 
     @Autowired
     private PdfExportService pdfExportService;
+
+    @Autowired
+    private CourseTeachingRepository courseTeachingRepository;
+    @Autowired
+    private ScoreRepository scoreRepository;
 
     /**
      * 获取老师信息列表
@@ -90,6 +92,20 @@ public class TeacherService {
 
         User user = userRepository.findByPersonId(personId);
         Person person = teacher.getPerson();
+
+        // 删除关联的课程教学记录
+        List<CourseTeaching> ct = courseTeachingRepository.findByTeacherId(teacher.getPersonId().toString());
+        if (!ct.isEmpty()) {
+            courseTeachingRepository.deleteAll(ct);
+        }
+
+        // 删除关联的成绩记录
+        List<Score> scores = scoreRepository.findByTeacherId(teacher.getPersonId().toString());
+        if (!scores.isEmpty()) {
+            for (Score score : scores) {
+                score.setTeacher(null);
+            }
+        }
 
         userRepository.delete(user);
         teacherRepository.delete(teacher);

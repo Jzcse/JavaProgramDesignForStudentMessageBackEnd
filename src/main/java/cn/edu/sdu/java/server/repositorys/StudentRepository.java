@@ -50,4 +50,7 @@ public interface StudentRepository extends JpaRepository<Student,Integer> {
 
     @Query("select student from Student student where student.person.num = :num")
     Student findByNum(String num);
+
+    @Query("select student from Student student where student.person.personId = :personId")
+    Optional<Student> findByPersonId(@Param("personId") Integer personId);
 }

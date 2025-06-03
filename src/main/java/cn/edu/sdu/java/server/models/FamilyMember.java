@@ -25,9 +25,11 @@ public class FamilyMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer memberId;
-    @ManyToOne
+
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="student_id")
     private Student student;
+
     @Size(max=10)
     private String relation;
     @Size(max=30)

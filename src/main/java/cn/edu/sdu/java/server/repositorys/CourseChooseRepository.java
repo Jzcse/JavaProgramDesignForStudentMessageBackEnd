@@ -12,6 +12,10 @@ import java.util.List;
 
 @Repository
 public interface CourseChooseRepository extends JpaRepository<CourseChoose,Integer> {
+
+    @Query("SELECT cc FROM CourseChoose cc WHERE cc.student.studentId = :studentId")
+    List<CourseChoose> findByStudentId(Integer studentId);
+
     @Query(value="SELECT cc from CourseChoose cc join cc.student student join cc.course course where (student.studentId=?1) and (course.courseId=?2)" )
     CourseChoose findByStudentCourse(@Param("studentId") Integer studentId, @Param("courseId") Integer courseId);
 

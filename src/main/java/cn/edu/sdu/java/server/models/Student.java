@@ -42,4 +42,7 @@ public class Student {
     @Size(max = 50)
     private String className;
 
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<FamilyMember> familyMembers = new HashSet<>();
+
 }

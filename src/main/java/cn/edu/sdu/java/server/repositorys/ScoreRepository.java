@@ -4,7 +4,6 @@ import cn.edu.sdu.java.server.models.Score;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -28,4 +27,10 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
 
     @Query(value="select score from Score score where score.course.courseId = :courseId" )
     List<Score> findByCourseId(Integer courseId);
+
+    @Query("select score from Score score where score.teacher.personId = :teacherId")
+    List<Score> findByTeacherId(@Param("teacherId") String string);
+
+    @Query("select score from Score score where score.student.studentId = :studentId")
+    List<Score> findByStudentId(Integer studentId);
 }
