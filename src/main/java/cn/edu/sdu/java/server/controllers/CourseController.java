@@ -28,6 +28,10 @@ public class CourseController {
     public DataResponse getCourseId(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.getCourseId(dataRequest);
     }
+    @PostMapping("/getCourseIdByNum")
+    public DataResponse getCourseIdByNum(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getCourseIdByNum(dataRequest);
+    }
 
     @PostMapping("/courseAdd")
     @PreAuthorize("hasRole('ADMIN')")

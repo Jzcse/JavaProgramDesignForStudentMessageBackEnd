@@ -301,6 +301,7 @@ public class ScoreService {
         Integer courseId = Integer.parseInt(courseId1);
         List<Student> studentList = courseChooseRepository.findStudentByCourse(courseId);
         Score score;
+        Score score1;
         Integer mark = 0;
         Integer markOfPerformance = 0;
         Integer markOfMidTerm = 0;
@@ -310,6 +311,9 @@ public class ScoreService {
         Double weightOfFinalTerm = 0.4;
         Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("未找到对应课程，ID：" + courseId));
         for(Student student:studentList){
+                score1 = scoreRepository.findByStudentAndCourse(student.getStudentId(),course.getCourseId());
+                if(score1!=null)
+                    continue;
                 score = new Score();
                 score.setStudent(student);
                 score.setCourse(course);

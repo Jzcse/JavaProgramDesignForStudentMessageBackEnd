@@ -240,11 +240,8 @@ public class CourseService {
         Map<String, Object> courseMap = dataRequest.getMap("course");
         String num = CommonMethod.getString(courseMap, "num");
         String name = CommonMethod.getString(courseMap, "name");
-        if (num == null) {
-            return CommonMethod.getReturnMessageError("课程编号不能为空");
-        }
-        if (name == null) {
-            return CommonMethod.getReturnMessageError("课程名称不能为空");
+        if (num == null&&name == null) {
+            return CommonMethod.getReturnMessageError("课程信息不能为空");
         }
         Course course = courseRepository.findByNumAndName(num, name).orElseThrow(() -> new RuntimeException("未找到该课程"));
         Map<String, Object> result = new HashMap<>();
@@ -628,6 +625,18 @@ public class CourseService {
         result.put("weightOfMidTerm", weightOfMidTerm);
         result.put("weightOfFinal", weightOfFinal);
         result.put("preCourseName", course.getPreCourse() != null ? course.getPreCourse().getName() : "");
+        return CommonMethod.getReturnData(result);
+    }
+
+    public DataResponse getCourseIdByNum(@Valid DataRequest dataRequest) {
+        Map<String, Object> courseMap = dataRequest.getMap("course");
+        String num = CommonMethod.getString(courseMap, "num");
+        if (num == null) {
+            return CommonMethod.getReturnMessageError("课程信息不能为空");
+        }
+        Course course = courseRepository.findByNum(num).orElseThrow(() -> new RuntimeException("未找到该课程"));
+        Map<String, Object> result = new HashMap<>();
+        result.put("courseId", course.getCourseId().toString());
         return CommonMethod.getReturnData(result);
     }
 }
