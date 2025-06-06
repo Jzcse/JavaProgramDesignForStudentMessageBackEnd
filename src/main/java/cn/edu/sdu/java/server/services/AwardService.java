@@ -43,7 +43,7 @@ public class AwardService {
             award.setAwardStudentList(CommonMethod.getList(awardMap,"awardStudentList"));
             award.setAwardTime(CommonMethod.getString(awardMap,"awardTime"));
             award.setAwardType(CommonMethod.getString(awardMap,"awardType"));
-            award.setAwardSize(CommonMethod.getInteger(awardMap,"awardSize"));
+            award.setAwardSize(CommonMethod.getString(awardMap,"awardSize"));
         }
         awardRepository.save(award);
 
@@ -164,7 +164,7 @@ public class AwardService {
             awardUpdate.setAwardStudentList(CommonMethod.getList(awardMap,"awardStudent"));
             awardUpdate.setAwardTime(CommonMethod.getString(awardMap,"awardTime"));
             awardUpdate.setAwardType(CommonMethod.getString(awardMap,"awardType"));
-            awardUpdate.setAwardSize(CommonMethod.getInteger(awardMap,"awardSize"));;
+            awardUpdate.setAwardSize(CommonMethod.getString(awardMap,"awardSize"));;
 
             awardRepository.save(awardUpdate);
             dataResponse.setCode(0);
