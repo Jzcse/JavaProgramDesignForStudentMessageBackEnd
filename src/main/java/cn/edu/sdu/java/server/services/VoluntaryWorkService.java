@@ -32,7 +32,7 @@ public class VoluntaryWorkService {
             voluntaryWork.setWorkType(CommonMethod.getString(voluntaryWorkMap,"workType"));
             voluntaryWork.setWorkLevel(CommonMethod.getString(voluntaryWorkMap,"workLevel"));
             voluntaryWork.setWorkTime(CommonMethod.getString(voluntaryWorkMap,"workTime"));
-            voluntaryWork.setWorkSize(CommonMethod.getInteger(voluntaryWorkMap,"workSize"));
+            voluntaryWork.setWorkSize(CommonMethod.getString(voluntaryWorkMap,"workSize"));
         }
         voluntaryWorkRepository.save(voluntaryWork);
         dataResponse.setCode(0);
@@ -69,7 +69,10 @@ public class VoluntaryWorkService {
     }
 
     public DataResponse getSelectedList(DataRequest dataRequest) {
-        String workName = dataRequest.getString("awardName");
+        String workName = dataRequest.getString("workName");
+        if (workName == null || workName.isEmpty()) {
+            return CommonMethod.getReturnMessageError("查询条件不能为空");
+        }
         List dataList = getVoluntaryWorkMapList(workName);
         return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
     }
@@ -144,7 +147,7 @@ public class VoluntaryWorkService {
             workUpdate.setWorkType(CommonMethod.getString(awardMap, "workType"));
             workUpdate.setWorkLevel(CommonMethod.getString(awardMap, "workLevel"));
             workUpdate.setWorkTime(CommonMethod.getString(awardMap, "workTime"));
-            workUpdate.setWorkSize(CommonMethod.getInteger(awardMap, "workSize"));
+            workUpdate.setWorkSize(CommonMethod.getString(awardMap, "workSize"));
 
             voluntaryWorkRepository.save(workUpdate);
             dataResponse.setCode(0);

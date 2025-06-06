@@ -39,7 +39,7 @@ public class VoluntaryWork {
     @Column(name = "work_size")
     @Getter
     @Setter
-    private Integer workSize;
+    private String workSize;
 
     @Override
     public String toString() {

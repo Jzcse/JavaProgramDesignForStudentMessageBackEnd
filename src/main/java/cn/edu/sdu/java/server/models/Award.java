@@ -31,7 +31,7 @@ public class Award {
     private String awardTime;
 
     @Column(name = "award_size")
-    private Integer awardSize;
+    private String awardSize;
 
     @OneToMany(mappedBy = "award", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AwardPerson> awardStudentList = new ArrayList<>();
