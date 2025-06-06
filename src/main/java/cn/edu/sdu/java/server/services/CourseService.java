@@ -628,15 +628,15 @@ public class CourseService {
         return CommonMethod.getReturnData(result);
     }
 
-    public DataResponse getCourseIdByNum(@Valid DataRequest dataRequest) {
-        Map<String, Object> courseMap = dataRequest.getMap("course");
-        String num = CommonMethod.getString(courseMap, "num");
-        if (num == null) {
-            return CommonMethod.getReturnMessageError("课程信息不能为空");
+        public DataResponse getCourseIdByNum(@Valid DataRequest dataRequest) {
+            Map<String, Object> courseMap = dataRequest.getMap("course");
+            String num = CommonMethod.getString(courseMap, "num");
+            if (num == null) {
+                return CommonMethod.getReturnMessageError("课程信息不能为空");
+            }
+            Course course = courseRepository.findByNum(num).orElseThrow(() -> new RuntimeException("未找到该课程"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("courseId", course.getCourseId().toString());
+            return CommonMethod.getReturnData(result);
         }
-        Course course = courseRepository.findByNum(num).orElseThrow(() -> new RuntimeException("未找到该课程"));
-        Map<String, Object> result = new HashMap<>();
-        result.put("courseId", course.getCourseId().toString());
-        return CommonMethod.getReturnData(result);
-    }
 }
